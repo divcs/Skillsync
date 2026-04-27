@@ -1,29 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SkillSync | From Student to Job-Ready Professional</title>
-  <meta
-    name="description"
-    content="SkillSync helps ambitious students transform into job-ready professionals for the USA market through clarity, skill building, positioning, and placement."
-  >
+  <meta name="description"
+    content="SkillSync helps ambitious students transform into job-ready professionals for the USA market through clarity, skill building, positioning, and placement.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+
+<body class="is-loading">
+  <div class="preloader" aria-hidden="true">
+    <div class="preloader-copy">
+      <img src="assets/logobw.svg" alt="SkillSync">
+      <p>Initializing USA career trajectory</p>
+      <div class="preloader-line"><span></span></div>
+      <strong data-loader-value>00</strong>
+    </div>
+  </div>
+
+
   <div class="noise"></div>
   <div class="cursor cursor-dot"></div>
   <div class="cursor cursor-ring"></div>
 
-  <a class="floating-whatsapp cursor-hover" href="https://wa.me/15551234567" target="_blank" rel="noreferrer" aria-label="Chat on WhatsApp">
+  <a class="floating-whatsapp cursor-hover" href="https://wa.me/15551234567" target="_blank" rel="noreferrer"
+    aria-label="Chat on WhatsApp">
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M20.5 3.5A11.4 11.4 0 0 0 2.8 17.2L1 23l5.9-1.7a11.5 11.5 0 0 0 5.1 1.2h.1A11.5 11.5 0 0 0 20.5 3.5Zm-8.4 17.1a9.4 9.4 0 0 1-4.8-1.3l-.4-.2-3.5 1 1-3.4-.2-.4a9.4 9.4 0 1 1 7.9 4.3Zm5.2-7.1c-.3-.1-1.9-.9-2.2-1-.3-.1-.5-.1-.8.2l-.6.8c-.2.2-.4.2-.7.1a7.6 7.6 0 0 1-3.7-3.2c-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6L9.3 5.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7 0 1.6 1.2 3.2 1.4 3.4.1.2 2.3 3.6 5.8 4.8 2.9 1 3.5.8 4.1.8.6-.1 1.9-.8 2.2-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.2-.6-.4Z"></path>
+      <path
+        d="M20.5 3.5A11.4 11.4 0 0 0 2.8 17.2L1 23l5.9-1.7a11.5 11.5 0 0 0 5.1 1.2h.1A11.5 11.5 0 0 0 20.5 3.5Zm-8.4 17.1a9.4 9.4 0 0 1-4.8-1.3l-.4-.2-3.5 1 1-3.4-.2-.4a9.4 9.4 0 1 1 7.9 4.3Zm5.2-7.1c-.3-.1-1.9-.9-2.2-1-.3-.1-.5-.1-.8.2l-.6.8c-.2.2-.4.2-.7.1a7.6 7.6 0 0 1-3.7-3.2c-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6L9.3 5.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.6.1-.9.4-.3.3-1.1 1.1-1.1 2.7 0 1.6 1.2 3.2 1.4 3.4.1.2 2.3 3.6 5.8 4.8 2.9 1 3.5.8 4.1.8.6-.1 1.9-.8 2.2-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.2-.6-.4Z">
+      </path>
     </svg>
   </a>
 
@@ -58,6 +70,8 @@
         <div class="fog fog-a"></div>
         <div class="fog fog-b"></div>
         <div class="grid-haze"></div>
+        <div id="hero-floating-lines" class="scene-lottie hero-floating-lines"></div>
+        <div id="hero-scanner-lottie" class="scene-lottie hero-scanner-lottie"></div>
       </div>
 
       <div class="container hero-layout">
@@ -65,8 +79,12 @@
           <p class="eyebrow">USA Career Transformation Experience</p>
           <h1>From Student to Job-Ready Professional</h1>
           <p class="hero-text">
-            SkillSync helps students decode the USA job market, sharpen what employers actually hire for, and step into interviews with proof, presence, and positioning.
+            SkillSync helps students decode the USA job market, sharpen what employers actually hire for, and step into
+            interviews with proof, presence, and positioning.
           </p>
+          <div class="hero-line-accent" aria-hidden="true">
+            <div id="hero-line-lottie" class="hero-line-lottie"></div>
+          </div>
           <div class="hero-actions">
             <a class="button cursor-hover magnetic" href="#journey">Start Your Journey</a>
             <a class="button button-secondary cursor-hover magnetic" href="#proof">See Success Stories</a>
@@ -88,6 +106,9 @@
         </div>
 
         <aside class="hero-panel glass-panel" data-reveal>
+          <div class="hero-panel-visual" aria-hidden="true">
+            <div id="hero-ui-lottie" class="hero-ui-lottie"></div>
+          </div>
           <div class="panel-tag">Transformation Map</div>
           <div class="path-steps">
             <span>Student</span>
@@ -99,7 +120,8 @@
             <span></span>
           </div>
           <p>
-            Scroll through a cinematic pathway where every section moves your visitor from uncertainty to a strong USA-ready career identity.
+            Scroll through a cinematic pathway where every section moves your visitor from uncertainty to a strong
+            USA-ready career identity.
           </p>
         </aside>
       </div>
@@ -114,6 +136,9 @@
       <div class="container section-intro" data-reveal>
         <p class="eyebrow">Scroll-Based Storytelling</p>
         <h2>A guided transformation built for ambitious students targeting the USA</h2>
+        <div class="section-accent-line" aria-hidden="true">
+          <div id="journey-line-lottie" class="journey-line-lottie"></div>
+        </div>
       </div>
 
       <div class="journey-track">
@@ -121,22 +146,29 @@
           <div class="journey-sidebar">
             <p class="journey-label">Career Journey</p>
             <div class="journey-stages">
-              <article class="stage-card active" data-stage="0" data-title="Clarity Sprint" data-kicker="Know where you fit." data-detail="We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel precise instead of overwhelming.">
+              <article class="stage-card active" data-stage="0" data-title="Clarity Sprint"
+                data-kicker="Know where you fit."
+                data-detail="We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel precise instead of overwhelming.">
                 <span>01</span>
                 <h3>Clarity Sprint</h3>
                 <p>Decode direction, role-fit, and the USA hiring landscape.</p>
               </article>
-              <article class="stage-card" data-stage="1" data-title="Skill Acceleration" data-kicker="Build employable proof." data-detail="We identify missing capabilities, stack practical projects, and sharpen high-signal skills that recruiters actually scan for.">
+              <article class="stage-card" data-stage="1" data-title="Skill Acceleration"
+                data-kicker="Build employable proof."
+                data-detail="We identify missing capabilities, stack practical projects, and sharpen high-signal skills that recruiters actually scan for.">
                 <span>02</span>
                 <h3>Skill Acceleration</h3>
                 <p>Turn academic potential into demonstrable workplace value.</p>
               </article>
-              <article class="stage-card" data-stage="2" data-title="Career Positioning" data-kicker="Become impossible to ignore." data-detail="Resume, LinkedIn, portfolio, and story all align around one thing: making you memorable to the right employer in the right market.">
+              <article class="stage-card" data-stage="2" data-title="Career Positioning"
+                data-kicker="Become impossible to ignore."
+                data-detail="Resume, LinkedIn, portfolio, and story all align around one thing: making you memorable to the right employer in the right market.">
                 <span>03</span>
                 <h3>Career Positioning</h3>
                 <p>Frame your experience around outcomes, not just effort.</p>
               </article>
-              <article class="stage-card" data-stage="3" data-title="Placement Success" data-kicker="Show up job-ready." data-detail="Interview prep, job matching, recruiter communication, and closing confidence help you move from shortlisted to selected.">
+              <article class="stage-card" data-stage="3" data-title="Placement Success" data-kicker="Show up job-ready."
+                data-detail="Interview prep, job matching, recruiter communication, and closing confidence help you move from shortlisted to selected.">
                 <span>04</span>
                 <h3>Placement Success</h3>
                 <p>Convert preparation into interviews, offers, and momentum.</p>
@@ -153,6 +185,9 @@
 
           <div class="journey-copy">
             <div class="progress-orbit">
+              <div class="progress-pulse" aria-hidden="true">
+                <div id="progress-pulse-lottie" class="progress-pulse-lottie"></div>
+              </div>
               <svg viewBox="0 0 220 220" aria-hidden="true">
                 <circle class="progress-track" cx="110" cy="110" r="88"></circle>
                 <circle class="progress-bar" cx="110" cy="110" r="88"></circle>
@@ -168,7 +203,8 @@
               <h3 id="journey-title">Clarity Sprint</h3>
               <p class="journey-kicker" id="journey-kicker">Know where you fit.</p>
               <p id="journey-detail">
-                We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel precise instead of overwhelming.
+                We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel
+                precise instead of overwhelming.
               </p>
             </div>
           </div>
@@ -181,6 +217,9 @@
         <div class="section-intro" data-reveal>
           <p class="eyebrow">Interactive Service Stack</p>
           <h2>Everything needed to move from studying hard to getting hired smarter</h2>
+        </div>
+        <div class="services-visual" aria-hidden="true">
+          <div id="job-match-lottie" class="job-match-lottie"></div>
         </div>
 
         <div class="service-grid">
@@ -203,7 +242,8 @@
               </svg>
             </div>
             <h3>Job Matching (USA)</h3>
-            <p>Role targeting aligned with your skillset, location strategy, and employer expectations across the USA market.</p>
+            <p>Role targeting aligned with your skillset, location strategy, and employer expectations across the USA
+              market.</p>
           </article>
 
           <article class="service-card glass-panel cursor-hover tilt-card" data-reveal>
@@ -214,7 +254,8 @@
               </svg>
             </div>
             <h3>Interview Preparation</h3>
-            <p>Mock interviews, confidence coaching, and sharper answers that sound credible, concise, and job-ready.</p>
+            <p>Mock interviews, confidence coaching, and sharper answers that sound credible, concise, and job-ready.
+            </p>
           </article>
 
           <article class="service-card glass-panel cursor-hover tilt-card" data-reveal>
@@ -225,7 +266,8 @@
               </svg>
             </div>
             <h3>Placement Assistance</h3>
-            <p>Support from application rhythm to recruiter follow-up so your preparation converts into real outcomes.</p>
+            <p>Support from application rhythm to recruiter follow-up so your preparation converts into real outcomes.
+            </p>
           </article>
         </div>
       </div>
@@ -242,8 +284,10 @@
           <div class="carousel-header">
             <p>Student-to-professional outcomes</p>
             <div class="carousel-controls">
-              <button class="carousel-button cursor-hover" type="button" data-carousel="prev" aria-label="Previous testimonial">Prev</button>
-              <button class="carousel-button cursor-hover" type="button" data-carousel="next" aria-label="Next testimonial">Next</button>
+              <button class="carousel-button cursor-hover" type="button" data-carousel="prev"
+                aria-label="Previous testimonial">Prev</button>
+              <button class="carousel-button cursor-hover" type="button" data-carousel="next"
+                aria-label="Next testimonial">Next</button>
             </div>
           </div>
 
@@ -251,25 +295,25 @@
             <div class="carousel-track">
               <article class="testimonial-card">
                 <span class="salary-badge">+42% salary jump</span>
-                <p>“I stopped applying everywhere and started applying with intent. That changed everything.”</p>
+                <p>"I stopped applying everywhere and started applying with intent. That changed everything."</p>
                 <h3>Aryan Patel</h3>
                 <small>Data Analyst, Dallas, USA</small>
               </article>
               <article class="testimonial-card">
                 <span class="salary-badge">First USA offer</span>
-                <p>“My resume finally sounded like a professional, not just a student. Recruiters started replying.”</p>
+                <p>"My resume finally sounded like a professional, not just a student. Recruiters started replying."</p>
                 <h3>Neha Joseph</h3>
                 <small>QA Engineer, New Jersey, USA</small>
               </article>
               <article class="testimonial-card">
                 <span class="salary-badge">3 offers in 6 weeks</span>
-                <p>“The interview drills gave me structure. I felt calm, sharp, and actually ready in the room.”</p>
+                <p>"The interview drills gave me structure. I felt calm, sharp, and actually ready in the room."</p>
                 <h3>Rahul Menon</h3>
                 <small>Business Analyst, Chicago, USA</small>
               </article>
               <article class="testimonial-card">
                 <span class="salary-badge">Internship to full-time</span>
-                <p>“They helped me position my projects like proof of capability, not just college assignments.”</p>
+                <p>"They helped me position my projects like proof of capability, not just college assignments."</p>
                 <h3>Sneha Reddy</h3>
                 <small>Software Engineer, Austin, USA</small>
               </article>
@@ -293,7 +337,9 @@
             <p>Career Strategist</p>
             <a class="team-link cursor-hover" href="#" aria-label="Aisha Sen on LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z"></path>
+                <path
+                  d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z">
+                </path>
               </svg>
             </a>
           </article>
@@ -304,7 +350,9 @@
             <p>USA Market Coach</p>
             <a class="team-link cursor-hover" href="#" aria-label="Rohan Varma on LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z"></path>
+                <path
+                  d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z">
+                </path>
               </svg>
             </a>
           </article>
@@ -315,7 +363,9 @@
             <p>Interview Mentor</p>
             <a class="team-link cursor-hover" href="#" aria-label="Maya Krishnan on LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z"></path>
+                <path
+                  d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z">
+                </path>
               </svg>
             </a>
           </article>
@@ -337,7 +387,8 @@
               <i></i>
             </button>
             <div class="faq-answer">
-              <p>Not at all. We support students planning for the USA market, currently studying there, or already applying for internships and full-time roles.</p>
+              <p>Not at all. We support students planning for the USA market, currently studying there, or already
+                applying for internships and full-time roles.</p>
             </div>
           </article>
 
@@ -347,7 +398,8 @@
               <i></i>
             </button>
             <div class="faq-answer">
-              <p>Yes. The first stage is built exactly for that. We reduce noise, define realistic targets, and create a role-specific action plan.</p>
+              <p>Yes. The first stage is built exactly for that. We reduce noise, define realistic targets, and create a
+                role-specific action plan.</p>
             </div>
           </article>
 
@@ -357,7 +409,8 @@
               <i></i>
             </button>
             <div class="faq-answer">
-              <p>Yes. We work on mock interviews, confidence, communication, response structure, and follow-up strategy so you feel prepared end to end.</p>
+              <p>Yes. We work on mock interviews, confidence, communication, response structure, and follow-up strategy
+                so you feel prepared end to end.</p>
             </div>
           </article>
 
@@ -367,7 +420,8 @@
               <i></i>
             </button>
             <div class="faq-answer">
-              <p>You can book a strategy call immediately, and most students begin their clarity sprint within a few days.</p>
+              <p>You can book a strategy call immediately, and most students begin their clarity sprint within a few
+                days.</p>
             </div>
           </article>
         </div>
@@ -376,11 +430,15 @@
 
     <section id="contact" class="contact section">
       <div class="container contact-shell glass-panel">
+        <div class="contact-hud" aria-hidden="true">
+          <div id="contact-scanner-lottie" class="contact-scanner-lottie"></div>
+        </div>
         <div class="contact-copy" data-reveal>
           <p class="eyebrow">Start The Shift</p>
-          <h2>Let’s design your USA career pathway with focus and momentum</h2>
+          <h2>Let's design your USA career pathway with focus and momentum</h2>
           <p>
-            Tell us where you are, where you want to go, and what feels stuck right now. We’ll help you turn that into a transformation plan.
+            Tell us where you are, where you want to go, and what feels stuck right now. We'll help you turn that into a
+            transformation plan.
           </p>
           <div class="contact-actions">
             <a class="button button-secondary cursor-hover magnetic" href="tel:+15551234567">Click To Call</a>
@@ -394,12 +452,16 @@
               </a>
               <a class="social-link cursor-hover" href="#" aria-label="LinkedIn">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z"></path>
+                  <path
+                    d="M6.9 8.7H3.8V20h3.1V8.7Zm.2-3.6A1.8 1.8 0 1 0 3.5 5a1.8 1.8 0 0 0 3.6.1ZM20 13.1c0-3.4-1.8-5-4.3-5-2 0-2.9 1.1-3.4 1.9V8.7H9.2V20h3.1v-6.3c0-1.7.3-3.3 2.4-3.3 2 0 2 1.9 2 3.4V20H20v-6.9Z">
+                  </path>
                 </svg>
               </a>
               <a class="social-link cursor-hover" href="#" aria-label="YouTube">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M21.2 7.4a2.9 2.9 0 0 0-2-2.1C17.3 4.8 12 4.8 12 4.8s-5.3 0-7.2.5a2.9 2.9 0 0 0-2 2.1 30.3 30.3 0 0 0 0 9.2 2.9 2.9 0 0 0 2 2.1c1.9.5 7.2.5 7.2.5s5.3 0 7.2-.5a2.9 2.9 0 0 0 2-2.1 30.3 30.3 0 0 0 0-9.2ZM10.2 14.9V9.1l5 2.9-5 2.9Z"></path>
+                  <path
+                    d="M21.2 7.4a2.9 2.9 0 0 0-2-2.1C17.3 4.8 12 4.8 12 4.8s-5.3 0-7.2.5a2.9 2.9 0 0 0-2 2.1 30.3 30.3 0 0 0 0 9.2 2.9 2.9 0 0 0 2 2.1c1.9.5 7.2.5 7.2.5s5.3 0 7.2-.5a2.9 2.9 0 0 0 2-2.1 30.3 30.3 0 0 0 0-9.2ZM10.2 14.9V9.1l5 2.9-5 2.9Z">
+                  </path>
                 </svg>
               </a>
             </div>
@@ -420,6 +482,10 @@
             <label for="goal">Career Goal</label>
           </div>
           <button class="button cursor-hover magnetic" type="submit">Request Career Roadmap</button>
+          <div class="form-success" aria-live="polite">
+            <div id="form-rocket-lottie" class="form-rocket-lottie" aria-hidden="true"></div>
+            <p data-form-status>Roadmap request launched. We'll reach out within one business day.</p>
+          </div>
           <p class="form-note">We typically respond within one business day.</p>
         </form>
       </div>
@@ -428,8 +494,9 @@
 
   <footer class="site-footer">
     <div class="container footer-shell">
-      <p>SkillSync transforms students into USA-ready professionals through clarity, capability, positioning, and placement support.</p>
-      <span>© 2026 SkillSync</span>
+      <p>SkillSync transforms students into USA-ready professionals through clarity, capability, positioning, and
+        placement support.</p>
+      <span>&copy; 2026 SkillSync</span>
     </div>
   </footer>
 
@@ -439,4 +506,5 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
   <script src="main.js"></script>
 </body>
+
 </html>

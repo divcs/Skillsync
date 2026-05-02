@@ -25,6 +25,198 @@ const accentAnimations = {}
 let currentSlide = 0
 let carouselTimer
 let journeyAnimation
+const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
+const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
+const LOGO_LOTTIE_PATH = 'assets/lottie/1skillsync-fixed.json'
+
+function safeStorageGet(storage, key) {
+  try {
+    return storage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function safeStorageSet(storage, key, value) {
+  try {
+    storage.setItem(key, value)
+  } catch {
+    // Ignore storage failures (private mode / blocked storage).
+  }
+}
+
+function safeStorageRemove(storage, key) {
+  try {
+    storage.removeItem(key)
+  } catch {
+    // Ignore storage failures (private mode / blocked storage).
+  }
+}
+
+function isReloadNavigation() {
+  const [navigationEntry] = performance.getEntriesByType('navigation')
+  if (navigationEntry && navigationEntry.type) {
+    return navigationEntry.type === 'reload'
+  }
+
+  if (performance.navigation) {
+    return performance.navigation.type === 1
+  }
+
+  return false
+}
+
+function trackInternalNavigationClicks() {
+  document.addEventListener(
+    'click',
+    (event) => {
+      const link = event.target.closest('a[href]')
+      if (!link) return
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      if (link.target && link.target !== '_self') return
+
+      const rawHref = link.getAttribute('href') || ''
+      if (
+        !rawHref ||
+        rawHref.startsWith('#') ||
+        rawHref.startsWith('mailto:') ||
+        rawHref.startsWith('tel:') ||
+        rawHref.startsWith('javascript:')
+      ) {
+        return
+      }
+
+      let nextUrl
+      try {
+        nextUrl = new URL(link.href, window.location.href)
+      } catch {
+        return
+      }
+
+      if (nextUrl.origin !== window.location.origin) return
+
+      safeStorageSet(sessionStorage, PRELOADER_SKIP_ONCE_KEY, '1')
+    },
+    true,
+  )
+}
+
+function isCurrentPageHome() {
+  const path = window.location.pathname.toLowerCase()
+  const href = window.location.href.toLowerCase()
+  return (
+    path === '/' ||
+    path.endsWith('/index.html') ||
+    href.endsWith('/index.html') ||
+    href.endsWith('/skillsync/') ||
+    (href.includes('skillsync') && !href.includes('about') && !href.includes('services') && !href.includes('contact'))
+  )
+}
+
+function shouldRunPreloader() {
+  const fromInternalClick =
+    safeStorageGet(sessionStorage, PRELOADER_SKIP_ONCE_KEY) === '1'
+
+  if (fromInternalClick) {
+    safeStorageRemove(sessionStorage, PRELOADER_SKIP_ONCE_KEY)
+  }
+
+  const isHomePage = isCurrentPageHome()
+  const refreshVisit = isReloadNavigation()
+  return (isHomePage && !fromInternalClick) || (refreshVisit && !fromInternalClick)
+}
+
+function shouldRunLogoLoader() {
+  const isHomePage = isCurrentPageHome()
+  const refreshVisit = isReloadNavigation()
+  const alreadyShownInSession =
+    safeStorageGet(sessionStorage, LOGO_LOADER_SHOWN_KEY) === '1'
+
+  const shouldRun = isHomePage && !refreshVisit && !alreadyShownInSession
+  console.log('[SkillSync Loader] Logo loader check:', { isHomePage, refreshVisit, alreadyShownInSession, shouldRun })
+  return shouldRun
+}
+
+function runLogoLoader() {
+  const logoLoader = document.getElementById('logo-loader')
+  const logoLottieContainer = document.getElementById('logo-loader-lottie')
+
+  if (!logoLoader || !logoLottieContainer) {
+    console.log('[SkillSync Loader] Logo loader elements not found')
+    return Promise.resolve()
+  }
+
+  console.log('[SkillSync Loader] Starting logo loader animation')
+  logoLottieContainer.innerHTML = ''
+  logoLoader.style.display = 'flex'
+  gsap.set('#logo-loader', { autoAlpha: 1 })
+
+  return new Promise((resolve) => {
+    let animation = null
+    let completed = false
+
+    const finish = () => {
+      if (completed) return
+      completed = true
+      console.log('[SkillSync Loader] Finishing logo loader')
+
+      if (animation) {
+        animation.destroy()
+      }
+
+      gsap.to('#logo-loader', {
+        autoAlpha: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+        onComplete: () => {
+          logoLoader.style.display = 'none'
+          console.log('[SkillSync Loader] Logo loader hidden')
+          resolve()
+        },
+      })
+    }
+
+    animation = loadLottieAnimation({
+      container: 'logo-loader-lottie',
+      path: LOGO_LOTTIE_PATH,
+      loop: false,
+      autoplay: true,
+      speed: 0.8,
+    })
+
+    if (!animation) {
+      console.log('[SkillSync Loader] Lottie animation failed to load, using fallback')
+      gsap.fromTo(
+        '#logo-loader-lottie',
+        { autoAlpha: 0, scale: 0.92 },
+        {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.7,
+          ease: 'power2.out',
+          onComplete: () => {
+            gsap.delayedCall(1.2, finish)
+          },
+        },
+      )
+      return
+    }
+
+    const fallbackTimer = window.setTimeout(finish, 4500)
+
+    const onComplete = () => {
+      window.clearTimeout(fallbackTimer)
+      animation.removeEventListener('complete', onComplete)
+      console.log('[SkillSync Loader] Logo animation completed')
+      gsap.delayedCall(0.15, finish)
+    }
+
+    animation.addEventListener('complete', onComplete)
+  })
+}
+
+trackInternalNavigationClicks()
 
 // SVG gradient for the progress orbit is injected once so the progress circle can glow.
 if (progressBar) {
@@ -44,7 +236,7 @@ if (progressBar) {
   progressBar.style.strokeDashoffset = `${progressLength * 0.75}`
 }
 
-function initPreloader() {
+async function initPreloader() {
   const greetings = [
     'Hello',
     'Hola',
@@ -56,16 +248,43 @@ function initPreloader() {
     'Namaste',
   ]
 
+  const logoLoader = document.getElementById('logo-loader')
   const greetingEl = document.getElementById('greeting')
   const preloader = document.getElementById('preloader')
-  const hero = document.querySelector('.hero')
 
   if (!greetingEl || !preloader) {
-    document.body.classList.remove('loading')
+    if (logoLoader) {
+      logoLoader.style.display = 'none'
+    }
+    document.body.classList.remove('is-loading')
     return
   }
 
-  document.body.classList.add('loading')
+  if (!shouldRunPreloader()) {
+    if (logoLoader) {
+      logoLoader.style.display = 'none'
+    }
+    preloader.style.display = 'none'
+    document.body.classList.remove('is-loading')
+    gsap.set('.hero h1', { opacity: 1, y: 0 })
+    return
+  }
+
+  if (shouldRunLogoLoader()) {
+    safeStorageSet(sessionStorage, LOGO_LOADER_SHOWN_KEY, '1')
+    await runLogoLoader()
+  } else if (logoLoader) {
+    logoLoader.style.display = 'none'
+  }
+
+  // Always reset to a clean start state so the greeting preloader runs on every refresh.
+  gsap.killTweensOf('#preloader')
+  gsap.killTweensOf('#greeting')
+  preloader.style.display = 'flex'
+  gsap.set('#preloader', { yPercent: 0, scale: 1 })
+  gsap.set('#greeting', { opacity: 1 })
+
+  document.body.classList.add('is-loading')
 
   // ✅ Single definition (removed duplicate)
   function isComplexScript(word) {
@@ -156,12 +375,12 @@ function initPreloader() {
     ease: 'expo.inOut',
     onComplete: () => {
       preloader.style.display = 'none'
-      document.body.classList.remove('loading')
+      document.body.classList.remove('is-loading')
     },
   })
 }
 
-window.addEventListener('load', initPreloader)
+window.addEventListener('DOMContentLoaded', initPreloader)
 
 // Wrap all init functions in try-catch to ensure they don't block each other
 try { initLenis() } catch(e) { console.warn('initLenis error:', e) }

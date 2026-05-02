@@ -1240,8 +1240,8 @@ button {
 }
 
 .testimonial-card {
-  flex: 0 0 min(340px, calc(100vw - 72px));
-  min-height: 320px;
+  flex: 0 0 min(360px, calc(100vw - 72px));
+  min-height: 380px;
   background:
     radial-gradient(
       circle at 90% 10%,
@@ -1262,10 +1262,19 @@ button {
 
 .testimonial-avatar {
   width: 100%;
-  height: 170px;
+  aspect-ratio: 4 / 3;
+  height: auto;
   object-fit: cover;
-  object-position: center 18%;
+  object-position: center 38%;
   display: block;
+}
+
+.testimonial-avatar--focus-top {
+  object-position: center 36%;
+}
+
+.testimonial-avatar--focus-right {
+  object-position: 58% 38%;
 }
 
 .testimonial-content {
@@ -1347,7 +1356,7 @@ button {
   .section { padding: 100px 0; }
   .hero { padding-top: 120px; }
   .service-grid, .team-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .testimonial-card { min-height: 320px; }
+  .testimonial-card { min-height: 380px; }
 }
 
 @media (min-width: 1400px) {
@@ -1974,6 +1983,21 @@ svg defs {
 
   .testimonial-card {
     flex-basis: min(300px, calc(100vw - 72px));
+    min-height: 0;
+  }
+
+  .testimonial-avatar {
+    aspect-ratio: 5 / 4;
+    height: auto;
+    object-position: center 40%;
+  }
+
+  .testimonial-avatar--focus-top {
+    object-position: center 38%;
+  }
+
+  .testimonial-avatar--focus-right {
+    object-position: 56% 40%;
   }
 
   .form-success {

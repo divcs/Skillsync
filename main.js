@@ -1,5 +1,7 @@
 gsap.registerPlugin(ScrollTrigger)
 
+let globalClickListener = null
+
 const stageCards = Array.from(document.querySelectorAll('.stage-card'))
 const revealItems = document.querySelectorAll('[data-reveal]')
 const progressBar = document.querySelector('.progress-bar')
@@ -160,17 +162,44 @@ function initPreloader() {
 }
 
 window.addEventListener('load', initPreloader)
-initLenis()
-initCursor()
-initHeroParallax()
-initLottieAccents()
-initReveals()
-initJourney()
-initServiceCards()
-initMagneticButtons()
-initCarousel()
-initFaq()
-initForm()
+
+// Wrap all init functions in try-catch to ensure they don't block each other
+try { initLenis() } catch(e) { console.warn('initLenis error:', e) }
+try { initCursor() } catch(e) { console.warn('initCursor error:', e) }
+try { initHeroParallax() } catch(e) { console.warn('initHeroParallax error:', e) }
+try { initLottieAccents() } catch(e) { console.warn('initLottieAccents error:', e) }
+try { initReveals() } catch(e) { console.warn('initReveals error:', e) }
+try { initJourney() } catch(e) { console.warn('initJourney error:', e) }
+try { initServiceCards() } catch(e) { console.warn('initServiceCards error:', e) }
+try { initMagneticButtons() } catch(e) { console.warn('initMagneticButtons error:', e) }
+try { initCarousel() } catch(e) { console.warn('initCarousel error:', e) }
+try { initFaq() } catch(e) { console.warn('initFaq error:', e) }
+try { initForm() } catch(e) { console.warn('initForm error:', e) }
+try { initMobileMenu() } catch(e) { console.warn('initMobileMenu error:', e) }
+
+function initTeamAvatars() {
+  const avatars = document.querySelectorAll('.team-avatar')
+  avatars.forEach((wrapper) => {
+    const img = wrapper.querySelector('img.avatar-img')
+    if (!img) return
+
+    // If image src exists, optimistically mark as having image so initials hide immediately
+    if (img.src && img.src.trim().length > 0) {
+      wrapper.classList.add('has-img')
+    }
+
+    // If image already loaded and valid, ensure class is present
+    if (img.complete && img.naturalWidth > 0) {
+      wrapper.classList.add('has-img')
+    }
+
+    // Add load/error listeners to keep state accurate
+    img.addEventListener('load', () => wrapper.classList.add('has-img'))
+    img.addEventListener('error', () => wrapper.classList.remove('has-img'))
+  })
+}
+
+try { initTeamAvatars() } catch (e) { console.warn('initTeamAvatars error:', e) }
 
 function initLenis() {
   const lenis = new Lenis({
@@ -531,6 +560,10 @@ function initJourney() {
 }
 
 function updateJourney(progress) {
+  if (!stageCards.length || !journeyTitle || !journeyKicker || !journeyDetail || !progressValue) {
+    return
+  }
+
   const clamped = gsap.utils.clamp(0, 1, progress)
   const stageIndex = Math.min(
     stageCards.length - 1,
@@ -736,5 +769,65 @@ function initForm() {
       { scale: 0.96 },
       { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.5)' },
     )
+  })
+}
+
+function initMobileMenu() {
+  const menuToggle = document.getElementById('mobileMenuToggle')
+  const siteNav = document.getElementById('siteNav')
+  const navLinks = siteNav?.querySelectorAll('a')
+
+  if (!menuToggle || !siteNav) return
+
+  // Ensure menu starts in closed state
+  menuToggle.classList.remove('is-active')
+  siteNav.classList.remove('is-open')
+
+  // Toggle menu on button click
+  const toggleClick = (e) => {
+    e.stopPropagation()
+    const isOpen = siteNav.classList.contains('is-open')
+    
+    if (isOpen) {
+      menuToggle.classList.remove('is-active')
+      siteNav.classList.remove('is-open')
+    } else {
+      menuToggle.classList.add('is-active')
+      siteNav.classList.add('is-open')
+    }
+  }
+
+  menuToggle.addEventListener('click', toggleClick)
+
+  // Close menu when clicking a navigation link
+  navLinks?.forEach((link) => {
+    link.addEventListener('click', () => {
+      menuToggle.classList.remove('is-active')
+      siteNav.classList.remove('is-open')
+    })
+  })
+
+  // Remove old global listener if exists
+  if (globalClickListener) {
+    document.removeEventListener('click', globalClickListener)
+  }
+
+  // Close menu when clicking outside
+  globalClickListener = (e) => {
+    if (!e.target.closest('header')) {
+      if (siteNav.classList.contains('is-open')) {
+        menuToggle.classList.remove('is-active')
+        siteNav.classList.remove('is-open')
+      }
+    }
+  }
+  document.addEventListener('click', globalClickListener)
+
+  // Close menu on window resize if needed
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1100 && siteNav.classList.contains('is-open')) {
+      menuToggle.classList.remove('is-active')
+      siteNav.classList.remove('is-open')
+    }
   })
 }

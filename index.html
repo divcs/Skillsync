@@ -16,12 +16,10 @@
 </head>
 
 <body class="is-loading">
-  <div class="preloader" aria-hidden="true">
-    <div class="preloader-copy">
-      <img src="assets/logobw.svg" alt="SkillSync">
-      <p>Initializing USA career trajectory</p>
-      <div class="preloader-line"><span></span></div>
-      <strong data-loader-value>00</strong>
+  <!-- PRELOADER -->
+  <div id="preloader" role="status" aria-live="polite" aria-label="Loading SkillSync">
+    <div class="loader-inner">
+      <h1 id="greeting"></h1>
     </div>
   </div>
 
@@ -294,28 +292,53 @@
           <div class="carousel-window">
             <div class="carousel-track">
               <article class="testimonial-card">
-                <span class="salary-badge">+42% salary jump</span>
-                <p>"I stopped applying everywhere and started applying with intent. That changed everything."</p>
-                <h3>Aryan Patel</h3>
-                <small>Data Analyst, Dallas, USA</small>
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=140&fit=crop"
+                  alt="Aryan Patel" class="testimonial-avatar">
+                <div class="testimonial-content">
+                  <span class="salary-badge">+42% salary jump</span>
+                  <p>"I stopped applying everywhere and started applying with intent. That changed everything."</p>
+                  <div style="margin-top: auto;">
+                    <h3>Aryan Patel</h3>
+                    <small>Data Analyst, Dallas, USA</small>
+                  </div>
+                </div>
               </article>
               <article class="testimonial-card">
-                <span class="salary-badge">First USA offer</span>
-                <p>"My resume finally sounded like a professional, not just a student. Recruiters started replying."</p>
-                <h3>Neha Joseph</h3>
-                <small>QA Engineer, New Jersey, USA</small>
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=140&fit=crop"
+                  alt="Neha Joseph" class="testimonial-avatar">
+                <div class="testimonial-content">
+                  <span class="salary-badge">First USA offer</span>
+                  <p>"My resume finally sounded like a professional, not just a student. Recruiters started replying."
+                  </p>
+                  <div style="margin-top: auto;">
+                    <h3>Neha Joseph</h3>
+                    <small>QA Engineer, New Jersey, USA</small>
+                  </div>
+                </div>
               </article>
               <article class="testimonial-card">
-                <span class="salary-badge">3 offers in 6 weeks</span>
-                <p>"The interview drills gave me structure. I felt calm, sharp, and actually ready in the room."</p>
-                <h3>Rahul Menon</h3>
-                <small>Business Analyst, Chicago, USA</small>
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=140&fit=crop"
+                  alt="Rahul Menon" class="testimonial-avatar">
+                <div class="testimonial-content">
+                  <span class="salary-badge">3 offers in 6 weeks</span>
+                  <p>"The interview drills gave me structure. I felt calm, sharp, and actually ready in the room."</p>
+                  <div style="margin-top: auto;">
+                    <h3>Rahul Menon</h3>
+                    <small>Business Analyst, Chicago, USA</small>
+                  </div>
+                </div>
               </article>
               <article class="testimonial-card">
-                <span class="salary-badge">Internship to full-time</span>
-                <p>"They helped me position my projects like proof of capability, not just college assignments."</p>
-                <h3>Sneha Reddy</h3>
-                <small>Software Engineer, Austin, USA</small>
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=140&fit=crop"
+                  alt="Sneha Reddy" class="testimonial-avatar">
+                <div class="testimonial-content">
+                  <span class="salary-badge">Internship to full-time</span>
+                  <p>"They helped me position my projects like proof of capability, not just college assignments."</p>
+                  <div style="margin-top: auto;">
+                    <h3>Sneha Reddy</h3>
+                    <small>Software Engineer, Austin, USA</small>
+                  </div>
+                </div>
               </article>
             </div>
           </div>
@@ -332,9 +355,14 @@
 
         <div class="team-grid">
           <article class="team-card glass-panel" data-reveal>
-            <div class="team-avatar avatar-a"><span>AS</span></div>
-            <h3>Aisha Sen</h3>
-            <p>Career Strategist</p>
+            <div class="team-avatar avatar-a">
+              <img src="assets/team/aisha.jpg" alt="Aisha Sen" class="avatar-img">
+              <span class="avatar-initials">AS</span>
+            </div>
+            <div class="team-info">
+              <h3>Aisha Sen</h3>
+              <p>Career Strategist</p>
+            </div>
             <a class="team-link cursor-hover" href="#" aria-label="Aisha Sen on LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -345,9 +373,14 @@
           </article>
 
           <article class="team-card glass-panel" data-reveal>
-            <div class="team-avatar avatar-b"><span>RV</span></div>
-            <h3>Rohan Varma</h3>
-            <p>USA Market Coach</p>
+            <div class="team-avatar avatar-b">
+              <img src="assets/team/rohan.jpg" alt="Rohan Varma" class="avatar-img">
+              <span class="avatar-initials">RV</span>
+            </div>
+            <div class="team-info">
+              <h3>Rohan Varma</h3>
+              <p>USA Market Coach</p>
+            </div>
             <a class="team-link cursor-hover" href="#" aria-label="Rohan Varma on LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -358,9 +391,14 @@
           </article>
 
           <article class="team-card glass-panel" data-reveal>
-            <div class="team-avatar avatar-c"><span>MK</span></div>
-            <h3>Maya Krishnan</h3>
-            <p>Interview Mentor</p>
+            <div class="team-avatar avatar-c">
+              <img src="assets/team/maya.jpg" alt="Maya Krishnan" class="avatar-img">
+              <span class="avatar-initials">MK</span>
+            </div>
+            <div class="team-info">
+              <h3>Maya Krishnan</h3>
+              <p>Interview Mentor</p>
+            </div>
             <a class="team-link cursor-hover" href="#" aria-label="Maya Krishnan on LinkedIn">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path

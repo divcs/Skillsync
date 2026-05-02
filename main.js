@@ -43,73 +43,123 @@ if (progressBar) {
 }
 
 function initPreloader() {
-  const preloader = document.querySelector('.preloader')
-  const loaderValue = document.querySelector('[data-loader-value]')
-  const preloaderLine = document.querySelector('.preloader-line span')
+  const greetings = [
+    'Hello',
+    'Hola',
+    'Bonjour',
+    'Ciao',
+    'Hallo',
+    'Konnichiwa',
+    'Nǐ Hǎo',
+    'Namaste',
+  ]
 
-  if (
-    !preloader ||
-    !loaderValue ||
-    !preloaderLine ||
-    typeof gsap === 'undefined'
-  ) {
-    document.body.classList.remove('is-loading')
+  const greetingEl = document.getElementById('greeting')
+  const preloader = document.getElementById('preloader')
+  const hero = document.querySelector('.hero')
+
+  if (!greetingEl || !preloader) {
+    document.body.classList.remove('loading')
     return
   }
 
-  const progress = { value: 0 }
+  document.body.classList.add('loading')
 
-  gsap
-    .timeline({
-      defaults: { ease: 'power3.out' },
-      delay: 0.1,
-      onComplete: () => {
-        document.body.classList.remove('is-loading')
-        preloader.setAttribute('aria-hidden', 'true')
-      },
+  // ✅ Single definition (removed duplicate)
+  function isComplexScript(word) {
+    return /[\u0900-\u097F\u4E00-\u9FFF\u3040-\u30FF]/.test(word)
+  }
+
+  function splitText(word) {
+    greetingEl.innerHTML = ''
+    word.split('').forEach((letter) => {
+      const span = document.createElement('span')
+      span.textContent = letter
+      span.classList.add('letter')
+      greetingEl.appendChild(span)
     })
-    .to(
-      progress,
-      {
-        value: 100,
-        duration: 1.6,
-        onUpdate: () => {
-          loaderValue.textContent = String(Math.round(progress.value)).padStart(
-            2,
-            '0',
-          )
+
+    return greetingEl.querySelectorAll('.letter')
+  }
+
+  const master = gsap.timeline()
+
+  greetings.forEach((word) => {
+    master.add(() => {
+      const letters = splitText(word)
+
+      // IN
+      gsap.fromTo(
+        letters,
+        {
+          opacity: 0,
+          y: 28,
+          filter: 'blur(1.5px)',
         },
-      },
-      0,
-    )
-    .to(
-      preloaderLine,
-      {
-        scaleX: 1,
-        duration: 1.6,
-        ease: 'power2.out',
-      },
-      0,
-    )
-    .to(
-      '.preloader-copy',
-      {
-        y: -24,
+        {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.35,
+          stagger: letters.length > 1 ? 0.025 : 0,
+          ease: 'power2.out',
+        },
+      )
+
+      // OUT
+      gsap.to(letters, {
         opacity: 0,
-        duration: 0.45,
-      },
-      1.2,
-    )
-    .to(
-      preloader,
-      {
-        autoAlpha: 0,
-        duration: 0.7,
-      },
-      1.28,
-    )
+        y: -18,
+        filter: 'blur(3px)',
+        duration: 0.28,
+        delay: 0.5,
+        stagger: letters.length > 1 ? 0.02 : 0,
+        ease: 'power2.in',
+      })
+    })
+
+    master.to({}, { duration: 0.7 })
+  })
+
+  // 1️⃣ fade out greeting
+  master.to('#greeting', {
+    opacity: 0,
+    duration: 0.3,
+    ease: 'power2.out',
+  })
+
+  // 2️⃣ slight scale (depth)
+  master.to('#preloader', {
+    scale: 1.02,
+    duration: 0.4,
+    ease: 'power2.out',
+  })
+
+  // 3️⃣ 🔥 START HERO TEXT BEFORE EXIT (this is the key)
+  master.to(
+    '.hero h1',
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.9,
+      ease: 'power3.out',
+    },
+    '-=0.6', // ← overlaps with next animation
+  )
+
+  // 4️⃣ vertical slide exit
+  master.to('#preloader', {
+    yPercent: -100,
+    duration: 1.1,
+    ease: 'expo.inOut',
+    onComplete: () => {
+      preloader.style.display = 'none'
+      document.body.classList.remove('loading')
+    },
+  })
 }
-initPreloader()
+
+window.addEventListener('load', initPreloader)
 initLenis()
 initCursor()
 initHeroParallax()

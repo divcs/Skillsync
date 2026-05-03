@@ -28,7 +28,6 @@ let journeyAnimation
 const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
 const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
 const LOGO_LOTTIE_PATH = 'assets/skillsync.json'
-const LOGO_VIDEO_PATH = 'assets/Skillsync-up-down.mp4'
 
 function safeStorageGet(storage, key) {
   try {
@@ -148,7 +147,12 @@ function runLogoLoader() {
     return Promise.resolve()
   }
 
-  console.log('[SkillSync Loader] Starting logo loader animation')
+  if (typeof lottie === 'undefined') {
+    console.log('[SkillSync Loader] Lottie not available, skipping')
+    return Promise.resolve()
+  }
+
+  console.log('[SkillSync Loader] Starting logo Lottie animation')
   logoLottieContainer.innerHTML = ''
   logoLoader.style.display = 'flex'
   gsap.set('#logo-loader', { autoAlpha: 1 })
@@ -156,22 +160,11 @@ function runLogoLoader() {
   return new Promise((resolve) => {
     let completed = false
     let fallbackTimer = null
-    let videoElement = null
 
     const finish = () => {
       if (completed) return
       completed = true
-      console.log('[SkillSync Loader] Finishing logo loader')
-
-      if (fallbackTimer) {
-        window.clearTimeout(fallbackTimer)
-      }
-
-      if (videoElement) {
-        videoElement.pause()
-        videoElement.removeAttribute('src')
-        videoElement.load()
-      }
+      if (fallbackTimer) window.clearTimeout(fallbackTimer)
 
       gsap.to('#logo-loader', {
         autoAlpha: 0,
@@ -185,36 +178,31 @@ function runLogoLoader() {
       })
     }
 
-    videoElement = document.createElement('video')
-    videoElement.className = 'logo-loader-video'
-    videoElement.src = LOGO_VIDEO_PATH
-    videoElement.muted = true
-    videoElement.autoplay = true
-    videoElement.playsInline = true
-    videoElement.preload = 'auto'
-    videoElement.controls = false
+    const anim = lottie.loadAnimation({
+      container: logoLottieContainer,
+      renderer: 'svg',
+      loop: false,
+      autoplay: true,
+      path: encodeURI(LOGO_LOTTIE_PATH),
+      rendererSettings: {
+        progressiveLoad: true,
+        hideOnTransparent: true,
+        preserveAspectRatio: 'xMidYMid meet',
+      },
+    })
 
-    logoLottieContainer.appendChild(videoElement)
-
-    const handleEnded = () => {
-      console.log('[SkillSync Loader] Logo video completed')
-      finish()
-    }
-
-    const handleError = () => {
-      console.log('[SkillSync Loader] Logo video failed to load')
-      finish()
-    }
-
-    videoElement.addEventListener('ended', handleEnded, { once: true })
-    videoElement.addEventListener('error', handleError, { once: true })
-
-    videoElement.play().catch(() => {
-      console.log('[SkillSync Loader] Logo video autoplay blocked, continuing')
+    anim.addEventListener('complete', () => {
+      console.log('[SkillSync Loader] Logo Lottie completed')
       finish()
     })
 
-    fallbackTimer = window.setTimeout(finish, 8000)
+    anim.addEventListener('error', () => {
+      console.log('[SkillSync Loader] Logo Lottie failed to load')
+      finish()
+    })
+
+    // Safety fallback — never block for more than 5s
+    fallbackTimer = window.setTimeout(finish, 5000)
   })
 }
 
@@ -645,7 +633,6 @@ function bindLottieToScroll(
 
 function initLottieAccents() {
   const compactViewport = window.matchMedia('(max-width: 1100px)').matches
-  const mobileViewport = window.matchMedia('(max-width: 768px)').matches
 
   accentAnimations.heroFloatingLines = loadLottieAnimation({
     container: 'hero-floating-lines',
@@ -670,35 +657,6 @@ function initLottieAccents() {
     speed: 0.8,
   })
 
-  accentAnimations.heroLine = loadLottieAnimation({
-    container: 'hero-line-lottie',
-    path: 'assets/animate/green line (1).json',
-    speed: 0.76,
-  })
-
-  if (!compactViewport) {
-    accentAnimations.heroScanner = loadLottieAnimation({
-      container: 'hero-scanner-lottie',
-      path: 'assets/animate/scanner (1).json',
-      speed: 0.8,
-    })
-  }
-
-  accentAnimations.journeyLine = loadLottieAnimation({
-    container: 'journey-line-lottie',
-    path: 'assets/animate/green line (1).json',
-    loop: false,
-    autoplay: false,
-    speed: 0.72,
-  })
-
-  bindLottieToScroll(accentAnimations.journeyLine, {
-    trigger: '#journey .section-intro',
-    start: 'top 88%',
-    end: 'bottom 30%',
-    fromFrame: 0,
-  })
-
   accentAnimations.progressPulse = loadLottieAnimation({
     container: 'progress-pulse-lottie',
     path: 'assets/animate/pulse loader (1).json',
@@ -710,14 +668,6 @@ function initLottieAccents() {
       container: 'job-match-lottie',
       path: 'assets/lottie-files/search-for-employee/animations/12345.json',
       speed: 0.92,
-    })
-  }
-
-  if (!mobileViewport) {
-    accentAnimations.contactScanner = loadLottieAnimation({
-      container: 'contact-scanner-lottie',
-      path: 'assets/animate/scanner (1).json',
-      speed: 0.62,
     })
   }
 

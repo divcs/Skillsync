@@ -450,18 +450,16 @@ button {
   font-size: clamp(1rem, 2vw, 1.15rem);
 }
 
-.hero-line-accent {
-  width: min(100%, 260px);
-  height: 72px;
-  margin: 16px 0 -2px;
-  opacity: 0.94;
+.hero-line-accent,
+.hero-line-lottie,
+.section-accent-line,
+.journey-line-lottie,
+.hero-scanner-lottie,
+.contact-hud,
+.contact-scanner-lottie {
+  display: none !important;
 }
 
-.hero-line-lottie {
-  width: 100%;
-  height: 100%;
-  filter: hue-rotate(128deg) saturate(1.08) brightness(1.05);
-}
 
 .hero-actions {
   display: flex;

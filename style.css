@@ -2293,21 +2293,16 @@ svg defs {
   }
 }
 
-/* Mobile background — stronger gradients so it's clearly violet/cyan, not just black */
+/* Mobile background — same dark navy palette as desktop, no purple shift */
 @media (max-width: 768px) {
   body {
     background:
       radial-gradient(
-        circle at 50% 10%,
-        rgba(124, 58, 237, 0.38),
-        transparent 50%
+        circle at 50% 8%,
+        rgba(34, 60, 150, 0.22),
+        transparent 45%
       ),
-      radial-gradient(
-        circle at 90% 50%,
-        rgba(34, 211, 238, 0.2),
-        transparent 38%
-      ),
-      linear-gradient(180deg, #020617 0%, #080f20 50%, #020617 100%);
+      linear-gradient(180deg, #020617 0%, #05091a 50%, #020617 100%);
   }
 }
 

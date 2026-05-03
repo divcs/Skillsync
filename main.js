@@ -274,8 +274,8 @@ async function initPreloader() {
   for (let i = 0; i < NUM_COLS; i++) {
     const tile = document.createElement('div')
     tile.className = 'preloader-tile'
-    // Pure black — maximum contrast with dark-navy hero (#020617)
-    tile.style.cssText = `flex:1;height:100%;background:#000;`
+    // Soft violet-white: maximum dramatic contrast when dark hero is revealed
+    tile.style.cssText = `flex:1;height:100%;background:#f0ebff;`
     tilesContainer.appendChild(tile)
   }
   preloader.appendChild(tilesContainer)
@@ -1478,20 +1478,21 @@ function initHeroEntranceSequence() {
       }
     }
 
-    // Paragraph text — word curtain
+    // Paragraph text — starts with h1 (no delay), word curtain
     if (heroText) {
+      tl.set(heroText, { opacity: 1 }, 0.20) // reveal container (was opacity:0 from elementsToHide)
       const words = heroText.textContent.split(/\s+/).filter(Boolean)
       heroText.innerHTML = words
         .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
         .join(' ')
       const wordInners = heroText.querySelectorAll('.reveal-word-inner')
       gsap.set(wordInners, { yPercent: 110 })
-      tl.to(wordInners, { yPercent: 0, duration: 0.68, stagger: 0.03, ease: 'power3.out' }, 0.52)
+      tl.to(wordInners, { yPercent: 0, duration: 0.72, stagger: 0.025, ease: 'power3.out' }, 0.22)
     }
 
     // CTA buttons
     if (heroActions) {
-      tl.fromTo(heroActions, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, 0.82)
+      tl.fromTo(heroActions, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, 0.68)
     }
 
     // Metrics
@@ -1499,7 +1500,7 @@ function initHeroEntranceSequence() {
       tl.fromTo(heroMetrics,
         { opacity: 0, y: 24, scale: 0.94 },
         { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.1 },
-        1.02
+        0.88
       )
     }
   }

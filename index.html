@@ -678,6 +678,34 @@
   <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
   <script src="main.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then((reg) => {
+            console.log('[SkillSync SW] Registered, scope:', reg.scope)
+
+            // After the page is idle, tell SW to warm-cache any Lottie
+            // files that may not have been pre-cached (e.g., external URLs)
+            if ('requestIdleCallback' in window) {
+              requestIdleCallback(() => {
+                reg.active?.postMessage({ type: 'GET_VERSION' })
+              }, { timeout: 3000 })
+            }
+          })
+          .catch((err) => console.warn('[SkillSync SW] Registration failed:', err))
+      })
+
+      // Listen for messages from SW
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'VERSION') {
+          console.log('[SkillSync SW] Cache version:', event.data.version)
+        }
+      })
+    }
+  </script>
 </body>
 
 </html>

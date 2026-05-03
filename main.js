@@ -362,6 +362,7 @@ async function initPreloader() {
       yPercent: -100,
       duration: 0.88,
       ease: 'power3.inOut',
+      force3D: true,
       stagger: { each: 0.055, from: 'start' },
       onComplete: () => {
         tilesContainer.remove()
@@ -455,6 +456,9 @@ function initCursor() {
 
   const dot = document.querySelector('.cursor-dot')
   const ring = document.querySelector('.cursor-ring')
+  if (dot) dot.style.willChange = 'transform'
+  if (ring) ring.style.willChange = 'transform'
+
   const dotX = gsap.quickTo(dot, 'x', { duration: 0.12, ease: 'power3.out' })
   const dotY = gsap.quickTo(dot, 'y', { duration: 0.12, ease: 'power3.out' })
   const ringX = gsap.quickTo(ring, 'x', { duration: 0.32, ease: 'power3.out' })
@@ -463,17 +467,23 @@ function initCursor() {
     '.cursor-hover, a, button, input, textarea',
   )
 
+  // Throttle via rAF — fires at most once per frame instead of every mousemove event
+  let _cx = 0, _cy = 0, _cursorRaf = false
   window.addEventListener('mousemove', (event) => {
+    _cx = event.clientX; _cy = event.clientY
     document.body.classList.add('cursor-active')
-    dotX(event.clientX)
-    dotY(event.clientY)
-    ringX(event.clientX)
-    ringY(event.clientY)
-  })
+    if (_cursorRaf) return
+    _cursorRaf = true
+    requestAnimationFrame(() => {
+      dotX(_cx); dotY(_cy)
+      ringX(_cx); ringY(_cy)
+      _cursorRaf = false
+    })
+  }, { passive: true })
 
   window.addEventListener('mouseout', () => {
     document.body.classList.remove('cursor-active')
-  })
+  }, { passive: true })
 
   hoverTargets.forEach((target) => {
     target.addEventListener('mouseenter', () =>
@@ -490,20 +500,31 @@ function initHeroParallax() {
   // and firing gsap.to() inside touchmove events is a major jank source.
   if (!isTouchDevice) {
     const sceneItems = document.querySelectorAll('[data-parallax]')
+    // Prime will-change on each parallax layer so the GPU composites them separately
+    sceneItems.forEach((el) => { el.style.willChange = 'transform' })
+
+    // Throttle to one update per animation frame
+    let _px = 0.5, _py = 0.5, _pxRaf = false
     window.addEventListener('mousemove', (event) => {
-      const x = event.clientX / window.innerWidth - 0.5
-      const y = event.clientY / window.innerHeight - 0.5
-      sceneItems.forEach((item) => {
-        const depth = Number(item.dataset.parallax)
-        gsap.to(item, {
-          x: x * depth * 160,
-          y: y * depth * 120,
-          duration: 0.9,
-          ease: 'power3.out',
-          overwrite: true,
+      _px = event.clientX / window.innerWidth - 0.5
+      _py = event.clientY / window.innerHeight - 0.5
+      if (_pxRaf) return
+      _pxRaf = true
+      requestAnimationFrame(() => {
+        sceneItems.forEach((item) => {
+          const depth = Number(item.dataset.parallax)
+          gsap.to(item, {
+            x: _px * depth * 160,
+            y: _py * depth * 120,
+            duration: 0.9,
+            ease: 'power3.out',
+            overwrite: 'auto',
+            force3D: true,
+          })
         })
+        _pxRaf = false
       })
-    })
+    }, { passive: true })
   }
 
   // Ambient glow drifts — keep on mobile but only if not reduced motion
@@ -866,21 +887,29 @@ function initServiceCards() {
   const cards = document.querySelectorAll('.tilt-card')
 
   cards.forEach((card) => {
+    card.style.willChange = 'transform'
+    let _scRaf = false
+    let _rotX = 0, _rotY = 0
+
     card.addEventListener('mousemove', (event) => {
       const rect = card.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-      const rotateY = gsap.utils.mapRange(0, rect.width, -10, 10, x)
-      const rotateX = gsap.utils.mapRange(0, rect.height, 10, -10, y)
-
-      gsap.to(card, {
-        rotateX,
-        rotateY,
-        transformPerspective: 1000,
-        duration: 0.35,
-        ease: 'power2.out',
+      _rotY = gsap.utils.mapRange(0, rect.width, -10, 10, event.clientX - rect.left)
+      _rotX = gsap.utils.mapRange(0, rect.height, 10, -10, event.clientY - rect.top)
+      if (_scRaf) return
+      _scRaf = true
+      requestAnimationFrame(() => {
+        gsap.to(card, {
+          rotateX: _rotX,
+          rotateY: _rotY,
+          transformPerspective: 1000,
+          duration: 0.35,
+          ease: 'power2.out',
+          force3D: true,
+          overwrite: 'auto',
+        })
+        _scRaf = false
       })
-    })
+    }, { passive: true })
 
     card.addEventListener('mouseleave', () => {
       gsap.to(card, {
@@ -888,34 +917,44 @@ function initServiceCards() {
         rotateY: 0,
         duration: 0.45,
         ease: 'power2.out',
+        force3D: true,
       })
     })
   })
 }
 
 function initMagneticButtons() {
+  if (isTouchDevice) return  // No pointer on touch — skip entirely
   const magneticItems = document.querySelectorAll('.magnetic')
 
   magneticItems.forEach((item) => {
+    item.style.willChange = 'transform'
+    let _mx = 0, _my = 0, _mRaf = false
+
     item.addEventListener('mousemove', (event) => {
       const rect = item.getBoundingClientRect()
-      const x = event.clientX - rect.left - rect.width / 2
-      const y = event.clientY - rect.top - rect.height / 2
-
-      gsap.to(item, {
-        x: x * 0.18,
-        y: y * 0.18,
-        duration: 0.35,
-        ease: 'power2.out',
+      _mx = (event.clientX - rect.left - rect.width / 2) * 0.18
+      _my = (event.clientY - rect.top - rect.height / 2) * 0.18
+      if (_mRaf) return
+      _mRaf = true
+      requestAnimationFrame(() => {
+        gsap.to(item, {
+          x: _mx, y: _my,
+          duration: 0.35,
+          ease: 'power2.out',
+          force3D: true,
+          overwrite: 'auto',
+        })
+        _mRaf = false
       })
-    })
+    }, { passive: true })
 
     item.addEventListener('mouseleave', () => {
       gsap.to(item, {
-        x: 0,
-        y: 0,
+        x: 0, y: 0,
         duration: 0.45,
         ease: 'elastic.out(1, 0.4)',
+        force3D: true,
       })
     })
   })
@@ -956,6 +995,8 @@ function initCarousel() {
       x: -(cardWidth + gap) * currentSlide,
       duration: 0.9,
       ease: 'power3.inOut',
+      force3D: true,
+      overwrite: 'auto',
     })
   }
 
@@ -1403,26 +1444,41 @@ try { initTextReveal() } catch (e) { console.warn('initTextReveal:', e) }
 // ── Gradient Border Mouse Tracking (service cards) ────
 function initGradientBorder() {
   document.querySelectorAll('.service-card').forEach((card) => {
+    let _gbRaf = false, _gx = 0, _gy = 0
     card.addEventListener('mousemove', (e) => {
       const r = card.getBoundingClientRect()
-      card.style.setProperty('--gx', `${e.clientX - r.left}px`)
-      card.style.setProperty('--gy', `${e.clientY - r.top}px`)
-    })
+      _gx = e.clientX - r.left; _gy = e.clientY - r.top
+      if (_gbRaf) return
+      _gbRaf = true
+      requestAnimationFrame(() => {
+        card.style.setProperty('--gx', `${_gx}px`)
+        card.style.setProperty('--gy', `${_gy}px`)
+        _gbRaf = false
+      })
+    }, { passive: true })
   })
 }
 try { initGradientBorder() } catch (e) { console.warn('initGradientBorder:', e) }
 
 // ── Cursor Spotlight (hero) ────────────────────────────
 function initCursorSpotlight() {
+  if (isTouchDevice) return
   const hero = document.querySelector('.hero')
   if (!hero) return
   hero.addEventListener('mouseenter', () => hero.classList.add('has-spotlight'))
   hero.addEventListener('mouseleave', () => hero.classList.remove('has-spotlight'))
+  let _slRaf = false, _slx = 0, _sly = 0
   hero.addEventListener('mousemove', (e) => {
     const r = hero.getBoundingClientRect()
-    hero.style.setProperty('--spotlight-x', `${e.clientX - r.left}px`)
-    hero.style.setProperty('--spotlight-y', `${e.clientY - r.top}px`)
-  })
+    _slx = e.clientX - r.left; _sly = e.clientY - r.top
+    if (_slRaf) return
+    _slRaf = true
+    requestAnimationFrame(() => {
+      hero.style.setProperty('--spotlight-x', `${_slx}px`)
+      hero.style.setProperty('--spotlight-y', `${_sly}px`)
+      _slRaf = false
+    })
+  }, { passive: true })
 }
 try { initCursorSpotlight() } catch (e) { console.warn('initCursorSpotlight:', e) }
 
@@ -1472,10 +1528,13 @@ function initParticles() {
   }, { passive: true })
 
   let raf
-  let isVisible = true
+  let isScrollVisible = true
+  let isTabVisible = !document.hidden
+
+  const isRunning = () => isScrollVisible && isTabVisible
 
   const draw = () => {
-    if (!isVisible) return
+    if (!isRunning()) return
     ctx.clearRect(0, 0, W, H)
     stars.forEach((s) => {
       s.a += s.sp * s.dir
@@ -1495,9 +1554,19 @@ function initParticles() {
     trigger: canvas.parentElement,
     start: 'top top',
     end: 'bottom top',
-    onLeave: () => { isVisible = false; cancelAnimationFrame(raf) },
-    onEnterBack: () => { isVisible = true; draw() },
+    onLeave: () => { isScrollVisible = false; cancelAnimationFrame(raf) },
+    onEnterBack: () => { isScrollVisible = true; if (isRunning()) draw() },
   })
+
+  // Also pause when the browser tab is hidden (Page Visibility API)
+  document.addEventListener('visibilitychange', () => {
+    isTabVisible = !document.hidden
+    if (isTabVisible && isRunning()) {
+      draw() // resume
+    } else {
+      cancelAnimationFrame(raf) // pause
+    }
+  }, { passive: true })
 }
 try { initParticles() } catch (e) { console.warn('initParticles:', e) }
 
@@ -1649,7 +1718,6 @@ function initSectionAccents() {
     })
   })
 }
-try { initSectionAccents() } catch (e) { console.warn('initSectionAccents:', e) }
 
 // ── Enigma-style: Hero panel parallax depth ───────────
 function initHeroPanelDepth() {
@@ -1659,25 +1727,49 @@ function initHeroPanelDepth() {
 
   const panel = document.querySelector('.hero-panel')
   if (!panel) return
+  panel.style.willChange = 'transform'
 
+  let _pdx = 0, _pdy = 0, _pdRaf = false
   document.addEventListener('mousemove', (e) => {
-    const x = (e.clientX / window.innerWidth - 0.5) * 10
-    const y = (e.clientY / window.innerHeight - 0.5) * 6
-    gsap.to(panel, {
-      rotateY: x,
-      rotateX: -y,
-      transformPerspective: 1200,
-      duration: 1.2,
-      ease: 'power2.out',
-      overwrite: true,
+    _pdx = (e.clientX / window.innerWidth - 0.5) * 10
+    _pdy = (e.clientY / window.innerHeight - 0.5) * 6
+    if (_pdRaf) return
+    _pdRaf = true
+    requestAnimationFrame(() => {
+      gsap.to(panel, {
+        rotateY: _pdx,
+        rotateX: -_pdy,
+        transformPerspective: 1200,
+        duration: 1.2,
+        ease: 'power2.out',
+        force3D: true,
+        overwrite: 'auto',
+      })
+      _pdRaf = false
     })
-  })
+  }, { passive: true })
 
   panel.addEventListener('mouseleave', () => {
     gsap.to(panel, {
       rotateY: 0, rotateX: 0,
       duration: 1.5, ease: 'elastic.out(1, 0.4)',
+      force3D: true,
     })
   })
 }
 try { initHeroPanelDepth() } catch (e) { console.warn('initHeroPanelDepth:', e) }
+
+// ── Idle-deferred non-critical inits ──────────────────
+// Run after the browser is idle so they don't compete with
+// the preloader / hero entrance sequence for the main thread.
+;(function deferNonCritical() {
+  const run = () => {
+    try { initSectionAccents() } catch (e) { console.warn('initSectionAccents:', e) }
+    try { initNavHoverEffect() } catch (e) { console.warn('initNavHoverEffect:', e) }
+  }
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(run, { timeout: 2500 })
+  } else {
+    setTimeout(run, 800)
+  }
+})()

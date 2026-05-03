@@ -1554,6 +1554,12 @@ button {
   flex-direction: column;
 }
 
+@media (max-width: 768px) {
+  .testimonial-content {
+    padding: 20px 18px;
+  }
+}
+
 .salary-badge {
   display: inline-flex;
   padding: 8px 12px;
@@ -2240,10 +2246,16 @@ svg defs {
     height: 62px;
   }
 
+  /* ── Carousel shell: tighter padding on mobile so cards have room ──
+     Shell had 24px padding → 48px total consumed, leaving the card
+     wider than the carousel-window, clipping the right border. */
   .journey-pin,
-  .contact-shell,
-  .carousel-shell {
+  .contact-shell {
     padding: 24px;
+  }
+
+  .carousel-shell {
+    padding: 16px 16px 20px;
   }
 
   .progress-orbit {
@@ -2255,8 +2267,15 @@ svg defs {
     inset: -16%;
   }
 
+  /* ── Testimonial card: correct width to fit inside the carousel window ──
+     Available width = 100vw
+       - container margin (40px)
+       - container padding-inline x2 (32px)
+       - carousel-shell padding x2 (32px, reduced above)
+       = 100vw - 104px
+     Using min() so it never exceeds 300px on larger phones. */
   .testimonial-card {
-    flex-basis: min(300px, calc(100vw - 72px));
+    flex-basis: min(300px, calc(100vw - 104px));
     min-height: 0;
   }
 

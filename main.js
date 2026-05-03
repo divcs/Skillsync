@@ -29,6 +29,14 @@ const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
 const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
 const LOGO_LOTTIE_PATH = 'assets/skillsync.json'
 
+// Cache preloader decision once so multiple callers agree (avoids side effects of
+// the sessionStorage flag removal in shouldRunPreloader())
+let _preloaderWillRun = null
+function preloaderWillRun() {
+  if (_preloaderWillRun === null) _preloaderWillRun = shouldRunPreloader()
+  return _preloaderWillRun
+}
+
 function safeStorageGet(storage, key) {
   try {
     return storage.getItem(key)
@@ -234,13 +242,13 @@ async function initPreloader() {
     return
   }
 
-  if (!shouldRunPreloader()) {
+  if (!preloaderWillRun()) {
     if (logoLoader) {
       logoLoader.style.display = 'none'
     }
     preloader.style.display = 'none'
     document.body.classList.remove('is-loading')
-    gsap.set('.hero h1', { opacity: 1, y: 0 })
+    initHeroReveal()
     return
   }
 
@@ -251,16 +259,38 @@ async function initPreloader() {
     logoLoader.style.display = 'none'
   }
 
-  // Always reset to a clean start state so the greeting preloader runs on every refresh.
+  // ── BUILD COLUMN STRIPS (enigma-style) ──────────────────
+  // Vertical strips spanning full screen height, hidden during greeting,
+  // then slide UP staggered after greeting completes
+  const NUM_COLS = window.innerWidth <= 768 ? 6 : 10
+  const tilesContainer = document.createElement('div')
+  tilesContainer.id = 'preloader-tiles'
+  tilesContainer.className = 'preloader-tiles'
+  tilesContainer.style.cssText = `
+    position:fixed;inset:0;display:flex;
+    flex-direction:row;z-index:10001;visibility:hidden;
+    pointer-events:none;overflow:hidden;
+  `
+  for (let i = 0; i < NUM_COLS; i++) {
+    const tile = document.createElement('div')
+    tile.className = 'preloader-tile'
+    tile.style.cssText = `flex:1;height:100%;background:#020617;`
+    tilesContainer.appendChild(tile)
+  }
+  preloader.appendChild(tilesContainer)
+
+  // Force solid bg directly — bypasses any CSS caching
+  preloader.style.background = 'radial-gradient(ellipse at 50% 40%, #0d1340 0%, #020617 65%)'
+
+  // ── GREETING SEQUENCE ──────────────────────────────────
   gsap.killTweensOf('#preloader')
   gsap.killTweensOf('#greeting')
   preloader.style.display = 'flex'
-  gsap.set('#preloader', { yPercent: 0, scale: 1 })
+  gsap.set('#preloader', { opacity: 1 })
   gsap.set('#greeting', { opacity: 1 })
 
   document.body.classList.add('is-loading')
 
-  // ✅ Single definition (removed duplicate)
   function isComplexScript(word) {
     return /[\u0900-\u097F\u4E00-\u9FFF\u3040-\u30FF]/.test(word)
   }
@@ -273,7 +303,6 @@ async function initPreloader() {
       span.classList.add('letter')
       greetingEl.appendChild(span)
     })
-
     return greetingEl.querySelectorAll('.letter')
   }
 
@@ -283,79 +312,83 @@ async function initPreloader() {
     master.add(() => {
       const letters = splitText(word)
 
-      // IN
       gsap.fromTo(
         letters,
+        { opacity: 0, y: 28, filter: 'blur(1.5px)' },
         {
-          opacity: 0,
-          y: 28,
-          filter: 'blur(1.5px)',
-        },
-        {
-          opacity: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.35,
-          stagger: letters.length > 1 ? 0.025 : 0,
-          ease: 'power2.out',
+          opacity: 1, y: 0, filter: 'blur(0px)',
+          duration: 0.35, stagger: letters.length > 1 ? 0.025 : 0, ease: 'power2.out',
         },
       )
 
-      // OUT
       gsap.to(letters, {
-        opacity: 0,
-        y: -18,
-        filter: 'blur(3px)',
-        duration: 0.28,
-        delay: 0.5,
-        stagger: letters.length > 1 ? 0.02 : 0,
-        ease: 'power2.in',
+        opacity: 0, y: -18, filter: 'blur(3px)',
+        duration: 0.28, delay: 0.5,
+        stagger: letters.length > 1 ? 0.02 : 0, ease: 'power2.in',
       })
     })
-
     master.to({}, { duration: 0.7 })
   })
 
-  // 1️⃣ fade out greeting
+  // Fade out greeting text before tile wipe
   master.to('#greeting', {
     opacity: 0,
-    duration: 0.3,
-    ease: 'power2.out',
+    y: -14,
+    duration: 0.35,
+    ease: 'power2.in',
   })
 
-  // 2️⃣ slight scale (depth)
-  master.to('#preloader', {
-    scale: 1.02,
-    duration: 0.4,
-    ease: 'power2.out',
-  })
-
-  // 3️⃣ 🔥 START HERO TEXT BEFORE EXIT (this is the key)
-  master.to(
-    '.hero h1',
-    {
-      opacity: 1,
-      y: 0,
-      duration: 0.9,
-      ease: 'power3.out',
-    },
-    '-=0.6', // ← overlaps with next animation
-  )
-
-  // 4️⃣ vertical slide exit
-  master.to('#preloader', {
-    yPercent: -100,
-    duration: 1.1,
-    ease: 'expo.inOut',
-    onComplete: () => {
-      preloader.style.display = 'none'
+  // ── ENIGMA-STYLE COLUMN SLIDE-UP REVEAL ──────────────────────────
+  // master.call() is the correct GSAP 3 API for timeline callbacks
+  master.call(() => {
+    if (!tilesContainer) {
       document.body.classList.remove('is-loading')
-      // Fire hero word reveal now that preloader is gone
-      try { initHeroWordReveal() } catch (e) { /* not yet defined */ }
+      preloader.style.display = 'none'
+      initHeroReveal()
       window.dispatchEvent(new CustomEvent('preloader-done'))
-    },
+      return
+    }
+
+    // Hard-clear greeting
+    gsap.set('#greeting', { opacity: 0, visibility: 'hidden' })
+
+    // Make tiles visible — position:fixed z:10001 covers everything
+    tilesContainer.style.visibility = 'visible'
+    gsap.set(tilesContainer.querySelectorAll('.preloader-tile'), { yPercent: 0 })
+
+    gsap.to(tilesContainer.querySelectorAll('.preloader-tile'), {
+      yPercent: -100,
+      duration: 0.88,
+      ease: 'power3.inOut',
+      stagger: { each: 0.055, from: 'start' },
+      onComplete: () => {
+        tilesContainer.remove()
+        preloader.style.display = 'none'
+        document.body.classList.remove('is-loading')
+        initHeroReveal()
+        window.dispatchEvent(new CustomEvent('preloader-done'))
+      },
+    })
   })
 }
+
+// ── Hero Reveal (called after preloader, no try/catch so errors are visible) ──
+function initHeroReveal() {
+  const heroCopy = document.querySelector('.hero-copy')
+  if (!heroCopy) return
+  // CSS transition handles the fade-in when is-loading is removed;
+  // this is just an extra GSAP safety net in case CSS transition doesn't fire
+  gsap.set(heroCopy, { opacity: 1, visibility: 'visible' })
+  if (!prefersReducedMotion) {
+    const children = Array.from(heroCopy.children)
+    gsap.fromTo(
+      children,
+      { opacity: 0, y: 22 },
+      { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out', delay: 0.05, clearProps: 'transform' }
+    )
+  }
+}
+
 
 window.addEventListener('DOMContentLoaded', initPreloader)
 
@@ -1027,28 +1060,36 @@ function initNavbarScroll() {
   })
 }
 
-// ── Hero H1 Word-Split Reveal ────────────────────────
+// ── Hero Reveal ───────────────────────────────────────
+// Called from preloader onComplete after body.is-loading is removed.
+// Uses simple fromTo instead of word-split to guarantee visibility.
 function initHeroWordReveal() {
-  const h1 = document.querySelector('.hero-copy h1')
-  if (!h1 || prefersReducedMotion) return
-  if (h1.dataset.revealDone) return
-  h1.dataset.revealDone = '1'
+  const heroCopy = document.querySelector('.hero-copy')
+  if (!heroCopy || prefersReducedMotion) return
+  if (heroCopy.dataset.revealDone) return
+  heroCopy.dataset.revealDone = '1'
 
-  const text = h1.innerText.trim()
-  const words = text.split(/\s+/).filter(Boolean)
-  h1.innerHTML = words
-    .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
-    .join(' ')
+  const h1    = heroCopy.querySelector('h1')
+  const eyebrow = heroCopy.querySelector('.eyebrow')
+  const text  = heroCopy.querySelector('.hero-text')
+  const cta   = heroCopy.querySelector('.hero-actions')
+  const metrics = heroCopy.querySelector('.hero-metrics')
 
-  const wordInners = h1.querySelectorAll('.reveal-word-inner')
-  gsap.set(wordInners, { yPercent: 110 })
-  gsap.to(wordInners, {
-    yPercent: 0,
-    duration: 0.82,
-    stagger: 0.07,
-    ease: 'power3.out',
-    delay: 0.2,
-  })
+  // Staggered entrance: eyebrow → h1 → paragraph → CTA → metrics
+  const els = [eyebrow, h1, text, cta, metrics].filter(Boolean)
+  gsap.fromTo(
+    els,
+    { opacity: 0, y: 28 },
+    {
+      opacity: 1,
+      y: 0,
+      duration: 0.75,
+      stagger: 0.12,
+      ease: 'power3.out',
+      delay: 0.1,
+      clearProps: 'all',
+    },
+  )
 }
 
 // ── Seamless Marquee Ticker ───────────────────────────
@@ -1231,7 +1272,7 @@ function initTextReveal() {
     if (el.dataset.revealDone) return
     el.dataset.revealDone = '1'
 
-    const raw = el.innerText.trim()
+    const raw = el.textContent.trim()
     if (!raw) return
 
     // Split each word into overflow:hidden wrapper
@@ -1266,8 +1307,8 @@ function initTextReveal() {
     })
   })
 
-  // Eyebrow labels — blur-clear fade
-  document.querySelectorAll('.eyebrow').forEach((el) => {
+  // Eyebrow labels — blur-clear fade (skip hero eyebrow which is handled by initHeroEntranceSequence)
+  document.querySelectorAll('.eyebrow:not([data-hero-eyebrow])').forEach((el) => {
     if (el.dataset.eyebrowDone) return
     el.dataset.eyebrowDone = '1'
     gsap.set(el, { opacity: 0, filter: 'blur(5px)', y: 5 })
@@ -1367,3 +1408,163 @@ function initParticles() {
   })
 }
 try { initParticles() } catch (e) { console.warn('initParticles:', e) }
+
+// ── Enigma-style Nav Link Slide-Up Hover ─────────────
+function initNavHoverEffect() {
+  const navLinks = document.querySelectorAll('.site-nav a')
+  navLinks.forEach((link) => {
+    // Avoid double-wrapping
+    if (link.dataset.navWrapped) return
+    link.dataset.navWrapped = '1'
+
+    const originalText = link.textContent.trim()
+    link.textContent = ''
+
+    const inner = document.createElement('span')
+    inner.className = 'nav-text-inner'
+    inner.textContent = originalText
+    link.appendChild(inner)
+
+    const clone = document.createElement('span')
+    clone.className = 'nav-text-clone'
+    clone.setAttribute('aria-hidden', 'true')
+    clone.textContent = originalText
+    link.appendChild(clone)
+  })
+}
+try { initNavHoverEffect() } catch (e) { console.warn('initNavHoverEffect:', e) }
+
+// ── Enigma-style Hero Entrance (runs after preloader) ─
+function initHeroEntranceSequence() {
+  if (prefersReducedMotion) return
+  if (!preloaderWillRun()) return // Skip if preloader won't run
+
+  const eyebrow = document.querySelector('.hero-copy [data-hero-eyebrow]')
+  const heroText = document.querySelector('.hero-copy .hero-text')
+  const heroActions = document.querySelector('.hero-copy .hero-actions')
+  const heroMetrics = document.querySelectorAll('.hero-metrics div')
+
+  // Hide hero elements initially (they animate in after preloader)
+  const elementsToHide = [eyebrow, heroText, heroActions, ...Array.from(heroMetrics)].filter(Boolean)
+  gsap.set(elementsToHide, { opacity: 0 })
+
+
+  function runEntrance() {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
+
+    if (eyebrow) {
+      tl.fromTo(eyebrow,
+        { opacity: 0, y: 14, filter: 'blur(4px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6 },
+        0.1
+      )
+      setTimeout(() => eyebrow.classList.add('is-active'), 800)
+    }
+
+    if (heroText) {
+      const words = heroText.textContent.split(/\s+/).filter(Boolean)
+      heroText.innerHTML = words
+        .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
+        .join(' ')
+      const wordInners = heroText.querySelectorAll('.reveal-word-inner')
+      gsap.set(wordInners, { yPercent: 110 })
+      tl.to(wordInners, {
+        yPercent: 0, duration: 0.72, stagger: 0.04, ease: 'power3.out',
+      }, 0.45)
+    }
+
+    if (heroActions) {
+      tl.fromTo(heroActions,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.65 },
+        0.8
+      )
+    }
+
+    if (heroMetrics.length) {
+      tl.fromTo(heroMetrics,
+        { opacity: 0, y: 24, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1 },
+        1.0
+      )
+    }
+  }
+
+  window.addEventListener('preloader-done', runEntrance, { once: true })
+
+  // Safety fallback: if preloader-done somehow doesn't fire, reveal after 12s
+  setTimeout(() => {
+    gsap.to(elementsToHide, { opacity: 1, duration: 0.5 })
+  }, 12000)
+}
+try { initHeroEntranceSequence() } catch (e) { console.warn('initHeroEntranceSequence:', e) }
+
+
+// ── Enigma-style: Animated section intro accent lines ─
+function initSectionAccents() {
+  if (prefersReducedMotion) return
+
+  document.querySelectorAll('.section-intro').forEach((intro) => {
+    // Add animated accent line before each section intro
+    if (!intro.querySelector('.section-accent-dash')) {
+      const dash = document.createElement('div')
+      dash.className = 'section-accent-dash'
+      dash.style.cssText = `
+        width: 0px; height: 2px;
+        background: linear-gradient(90deg, var(--violet), var(--cyan));
+        border-radius: 2px; margin-bottom: 18px;
+        transform-origin: left center;
+      `
+      intro.prepend(dash)
+
+      ScrollTrigger.create({
+        trigger: intro,
+        start: 'top 84%',
+        once: true,
+        onEnter: () => {
+          gsap.to(dash, { width: '40px', duration: 0.8, ease: 'power3.out' })
+        },
+      })
+    }
+  })
+
+  // Eyebrow gradient activation on scroll
+  document.querySelectorAll('.eyebrow').forEach((el) => {
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 88%',
+      once: true,
+      onEnter: () => {
+        setTimeout(() => el.classList.add('is-active'), 400)
+      },
+    })
+  })
+}
+try { initSectionAccents() } catch (e) { console.warn('initSectionAccents:', e) }
+
+// ── Enigma-style: Hero panel parallax depth ───────────
+function initHeroPanelDepth() {
+  const panel = document.querySelector('.hero-panel')
+  if (!panel) return
+
+  document.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 10
+    const y = (e.clientY / window.innerHeight - 0.5) * 6
+    gsap.to(panel, {
+      rotateY: x,
+      rotateX: -y,
+      transformPerspective: 1200,
+      duration: 1.2,
+      ease: 'power2.out',
+      overwrite: true,
+    })
+  })
+
+  panel.addEventListener('mouseleave', () => {
+    gsap.to(panel, {
+      rotateY: 0, rotateX: 0,
+      duration: 1.5, ease: 'elastic.out(1, 0.4)',
+    })
+  })
+}
+try { initHeroPanelDepth() } catch (e) { console.warn('initHeroPanelDepth:', e) }

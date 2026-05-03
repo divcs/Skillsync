@@ -163,29 +163,49 @@ body.is-loading {
 }
 
 
+/* Hide hero copy while preloader is active — body.is-loading set in HTML from first paint */
+.is-loading .hero-copy {
+  opacity: 0;
+  visibility: hidden;
+}
+/* Fade in hero copy when is-loading is removed — CSS fallback for any JS timing issues */
+.hero-copy {
+  transition: opacity 0.8s ease 0.15s;
+}
+
 #preloader {
   position: fixed;
   inset: 0;
-  background:
-    radial-gradient(
-      circle at 45% 35%,
-      rgba(34, 211, 238, 0.12),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 58% 62%,
-      rgba(244, 114, 182, 0.1),
-      transparent 30%
-    ),
-    linear-gradient(145deg, #020617 0%, #08111f 48%, #050713 100%);
+  /* Solid dark background — greeting shows on its own screen, not over the hero */
+  background: radial-gradient(ellipse at 50% 40%, #0d1340 0%, #020617 65%);
   color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-
-  clip-path: circle(100% at 50% 50%);
+  pointer-events: none;
   will-change: transform;
+}
+
+/* COLUMN STRIPS — cover screen during preloader exit */
+#preloader-tiles,
+.preloader-tiles {
+  position: fixed;        /* must be fixed to cover everything */
+  inset: 0;
+  display: flex;
+  flex-direction: row;
+  z-index: 10001;         /* above #preloader (9999) and #logo-loader (10000) */
+  pointer-events: none;
+  overflow: hidden;
+  visibility: hidden;     /* hidden during greeting, shown at exit wipe */
+}
+
+.preloader-tile {
+  flex: 1;
+  height: 100%;
+  background: #020617;
+  will-change: transform;
+  transform-origin: center top;
 }
 
 /* INNER */
@@ -196,6 +216,8 @@ body.is-loading {
   width: 100%;
   height: 100%;
   padding: 0;
+  position: relative;
+  z-index: 9999;
 }
 
 /* TEXT */
@@ -216,6 +238,142 @@ body.is-loading {
   opacity: 0;
   will-change: opacity, transform, filter;
 }
+
+/* ─── Enigma-style animation utilities ───────────────── */
+
+/* Word split reveal wrappers */
+.reveal-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: inherit;
+}
+
+.reveal-word-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Horizontal line wipe in */
+.line-wipe {
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--violet), var(--cyan), transparent);
+  transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.line-wipe.is-visible {
+  width: 100%;
+}
+
+/* Char-by-char scramble text */
+[data-scramble] {
+  will-change: auto;
+}
+
+/* Nav link — Enigma style: slide text upward on hover with clip-path */
+.site-nav a {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* Tile variation: every nth tile gets a subtle hue shift */
+.preloader-tile:nth-child(3n) {
+  background:
+    radial-gradient(
+      ellipse at 60% 40%,
+      rgba(139, 92, 246, 0.1),
+      transparent 60%
+    ),
+    linear-gradient(145deg, #020617 0%, #08111f 60%, #050713 100%);
+}
+
+.preloader-tile:nth-child(5n) {
+  background:
+    radial-gradient(
+      ellipse at 30% 70%,
+      rgba(244, 114, 182, 0.06),
+      transparent 60%
+    ),
+    linear-gradient(145deg, #020617 0%, #08111f 60%, #050713 100%);
+}
+
+/* ─── Hero section entrance \u2014 Enigma-style stagger ──────── */
+.hero-copy [data-reveal] {
+  transition: none;
+}
+
+/* Paragraph reveal \u2014 lines fade up one by one */
+.para-reveal-line {
+  display: block;
+  overflow: hidden;
+}
+
+.para-reveal-inner {
+  display: block;
+  will-change: transform, opacity;
+}
+
+/* Section heading accent dash */
+.section-intro::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+  margin-bottom: 20px;
+  border-radius: 2px;
+  transform-origin: left center;
+  animation: none;
+}
+
+/* Eyebrow \u2014 gradient text on scroll entry (applied via JS class) */
+.eyebrow.is-active {
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero h1 char span styling for scramble */
+.scramble-char {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+
+/* Smooth hero metrics counter entrance */
+.hero-metrics div {
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.hero-metrics div:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.15);
+}
+
+/* ─── Nav hover: slide-up text reveal (Enigma style) ──── */
+.site-nav a .nav-text-inner {
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-nav a:hover .nav-text-inner {
+  transform: translateY(-110%);
+}
+
+.site-nav a .nav-text-clone {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  width: 100%;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-nav a:hover .nav-text-clone {
+  transform: translateY(-110%);
+}
+
 
 img {
   max-width: 100%;
@@ -2053,7 +2211,10 @@ svg defs {
   }
 
   .hero-copy h1 {
-    max-width: 8ch;
+    font-size: clamp(2.6rem, 10vw, 4rem);
+    max-width: none;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .hero-panel-visual,
@@ -2140,8 +2301,8 @@ svg defs {
 }
 
 @media (hover: none), (pointer: coarse) {
-  .cursor,
-  .floating-whatsapp {
+  /* Only hide the mouse cursor — WhatsApp stays visible on mobile */
+  .cursor {
     display: none;
   }
 }
@@ -2735,4 +2896,77 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
 @media (max-width: 768px) {
   .blog-grid { grid-template-columns: 1fr; }
   .blog-preview-header { flex-direction: column; align-items: flex-start; }
+
+  /* WhatsApp stacked BELOW back-to-top, both on the right */
+  .floating-whatsapp {
+    right: 20px;
+    left: auto;
+    bottom: 20px;
+    width: 46px;
+    height: 46px;
+  }
+
+  #back-to-top {
+    right: 20px;
+    bottom: 76px;  /* sits above WhatsApp */
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Container breathing room */
+  .container {
+    padding-inline: max(16px, 4vw);
+  }
+
+  /* Hero copy: prevent overflow */
+  .hero-copy {
+    width: 100%;
+    padding-right: 0;
+    overflow: hidden;
+  }
+
+  /* Cap section h2 font-size on mobile to prevent overflow */
+  h2 {
+    font-size: clamp(1.7rem, 6.5vw, 2.6rem) !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Eyebrow: reduce letter-spacing so it fits */
+  .eyebrow {
+    letter-spacing: 0.1em;
+    font-size: 0.65rem;
+  }
+
+  /* Blog hero h1 */
+  .blog-hero h1 {
+    font-size: clamp(2.4rem, 10vw, 4rem);
+    word-break: break-word;
+  }
+
+  /* Loader brand text */
+  .loader-brand {
+    font-size: 1.05rem;
+    letter-spacing: 0.28em;
+  }
+}
+
+@media (max-width: 420px) {
+  .floating-whatsapp {
+    width: 42px;
+    height: 42px;
+    right: 14px;
+    bottom: 16px;
+  }
+
+  #back-to-top {
+    right: 14px;
+    bottom: 68px;
+    width: 40px;
+    height: 40px;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+  }
 }

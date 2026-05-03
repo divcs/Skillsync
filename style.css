@@ -422,9 +422,16 @@ button {
 }
 
 .section-intro h2,
-.hero-copy h1,
 .contact-copy h2 {
   margin: 0;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.hero-copy h1 {
+  margin: 0 0 clamp(1.25rem, 2.5vw, 2rem);
   font-family: 'Syne', sans-serif;
   font-weight: 700;
   line-height: 0.95;

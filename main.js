@@ -662,35 +662,67 @@ function bindLottieToScroll(
 function initLottieAccents() {
   const compactViewport = window.matchMedia('(max-width: 1100px)').matches
 
-  accentAnimations.heroFloatingLines = loadLottieAnimation({
-    container: 'hero-floating-lines',
-    path: 'assets/lottie-files/Floating Lines.json',
-    loop: false,
-    autoplay: false,
-    speed: 0.4,
-    preserveAspectRatio: 'xMidYMid slice',
-  })
+  // ── Hero floating lines ─────────────────────────────────────────
+  // On mobile: skipped entirely (CSS hides the container too).
+  // On desktop: scroll-driven SVG animation.
+  if (!isTouchDevice) {
+    accentAnimations.heroFloatingLines = loadLottieAnimation({
+      container: 'hero-floating-lines',
+      path: 'assets/lottie-files/Floating Lines.json',
+      loop: false,
+      autoplay: false,
+      speed: 0.4,
+      preserveAspectRatio: 'xMidYMid slice',
+    })
 
-  bindLottieToScroll(accentAnimations.heroFloatingLines, {
-    trigger: '.hero',
-    start: 'top top',
-    end: 'bottom top',
-    fromFrame: 50,
-    toFrame: 430,
-  })
+    bindLottieToScroll(accentAnimations.heroFloatingLines, {
+      trigger: '.hero',
+      start: 'top top',
+      end: 'bottom top',
+      fromFrame: 50,
+      toFrame: 430,
+    })
+  }
 
-  accentAnimations.heroUi = loadLottieAnimation({
-    container: 'hero-ui-lottie',
-    path: 'assets/lottie-files/UI Animation.json',
-    speed: 0.8,
-  })
+  // ── Hero UI panel animation ─────────────────────────────────────
+  // On mobile: load once, jump to frame 0, stop immediately → static image.
+  // On desktop: plays continuously at 0.8x speed.
+  if (isTouchDevice) {
+    accentAnimations.heroUi = loadLottieAnimation({
+      container: 'hero-ui-lottie',
+      path: 'assets/lottie-files/UI Animation.json',
+      loop: false,
+      autoplay: false,
+      speed: 1,
+    })
+    if (accentAnimations.heroUi) {
+      const onUiLoaded = () => {
+        accentAnimations.heroUi.goToAndStop(0, true)
+      }
+      if (accentAnimations.heroUi.isLoaded) {
+        onUiLoaded()
+      } else {
+        accentAnimations.heroUi.addEventListener('DOMLoaded', onUiLoaded)
+      }
+    }
+  } else {
+    accentAnimations.heroUi = loadLottieAnimation({
+      container: 'hero-ui-lottie',
+      path: 'assets/lottie-files/UI Animation.json',
+      speed: 0.8,
+    })
+  }
 
+  // ── Progress pulse (journey section orbit) ──────────────────────
+  // Keep on all devices — it's small and not scroll-driven.
   accentAnimations.progressPulse = loadLottieAnimation({
     container: 'progress-pulse-lottie',
     path: 'assets/animate/pulse loader (1).json',
     speed: 0.92,
   })
 
+  // ── Job match (services section) ────────────────────────────────
+  // Desktop-only (compactViewport already excludes ≤1100px).
   if (!compactViewport) {
     accentAnimations.jobMatch = loadLottieAnimation({
       container: 'job-match-lottie',
@@ -699,6 +731,7 @@ function initLottieAccents() {
     })
   }
 
+  // ── Form rocket (contact section) ───────────────────────────────
   accentAnimations.formRocket = loadLottieAnimation({
     container: 'form-rocket-lottie',
     path: 'assets/lottie-files/rocket-launch/animations/88ef49fc-7868-4e1a-b677-2df4eb236ac7.json',
@@ -726,17 +759,39 @@ function initReveals() {
 function initJourney() {
   const lottieTarget = document.getElementById('journey-lottie')
 
-  // Skip Lottie animation on mobile to reduce GPU/CPU load during scroll
-  if (lottieTarget && !isTouchDevice) {
-    journeyAnimation = loadLottieAnimation({
-      container: lottieTarget,
-      loop: false,
-      autoplay: false,
-      path: 'assets/lottie/1skillsync-fixed.json',
-      preserveAspectRatio: 'xMidYMid slice',
-    })
-
-    journeyAnimation.addEventListener('DOMLoaded', () => updateJourney(0))
+  if (lottieTarget) {
+    if (isTouchDevice) {
+      // Mobile: load the Lottie, jump to frame 0 and stop immediately.
+      // This renders a crisp static first frame — no scroll-driven seeking,
+      // no rAF overhead, no goToAndStop() calls during scroll.
+      journeyAnimation = loadLottieAnimation({
+        container: lottieTarget,
+        loop: false,
+        autoplay: false,
+        path: 'assets/lottie/1skillsync-fixed.json',
+        preserveAspectRatio: 'xMidYMid slice',
+      })
+      if (journeyAnimation) {
+        const onJourneyLoaded = () => {
+          journeyAnimation.goToAndStop(0, true)
+        }
+        if (journeyAnimation.isLoaded) {
+          onJourneyLoaded()
+        } else {
+          journeyAnimation.addEventListener('DOMLoaded', onJourneyLoaded)
+        }
+      }
+    } else {
+      // Desktop: fully animated, scroll-driven.
+      journeyAnimation = loadLottieAnimation({
+        container: lottieTarget,
+        loop: false,
+        autoplay: false,
+        path: 'assets/lottie/1skillsync-fixed.json',
+        preserveAspectRatio: 'xMidYMid slice',
+      })
+      journeyAnimation.addEventListener('DOMLoaded', () => updateJourney(0))
+    }
   }
 
   if (window.innerWidth > 1100) {

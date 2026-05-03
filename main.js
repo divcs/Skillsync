@@ -372,21 +372,13 @@ async function initPreloader() {
   })
 }
 
-// ── Hero Reveal (called after preloader, no try/catch so errors are visible) ──
+// ── Hero Reveal (called from preloader onComplete) ─────────────────────────
+// Only ensures the .hero-copy container is visible.
+// Individual child animations are owned by initHeroEntranceSequence.
 function initHeroReveal() {
   const heroCopy = document.querySelector('.hero-copy')
   if (!heroCopy) return
-  // CSS transition handles the fade-in when is-loading is removed;
-  // this is just an extra GSAP safety net in case CSS transition doesn't fire
-  gsap.set(heroCopy, { opacity: 1, visibility: 'visible' })
-  if (!prefersReducedMotion) {
-    const children = Array.from(heroCopy.children)
-    gsap.fromTo(
-      children,
-      { opacity: 0, y: 22 },
-      { opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out', delay: 0.05, clearProps: 'transform' }
-    )
-  }
+  gsap.set(heroCopy, { opacity: 1, visibility: 'visible', clearProps: 'transform' })
 }
 
 
@@ -1213,16 +1205,11 @@ function initEnhancedReveals() {
   }
 }
 
-// ── Patch preloader to dispatch event on exit ─────────
-// Wrap the existing initPreloader's onComplete to also fire a custom event
-const _origInitPreloader = window._origInitPreloader
+// 7.5s safety net: if preloader-done never fired, force hero visible
 window.addEventListener('DOMContentLoaded', () => {
-  // Wait briefly for preloader to finish, then run hero reveal
-  // as a safe fallback (event approach in initPreloader)
   setTimeout(() => {
-    if (!document.body.classList.contains('is-loading')) {
-      initHeroWordReveal()
-    }
+    const heroCopy = document.querySelector('.hero-copy')
+    if (heroCopy) gsap.set(heroCopy, { opacity: 1, visibility: 'visible' })
   }, 7500)
 })
 
@@ -1434,33 +1421,52 @@ function initNavHoverEffect() {
 }
 try { initNavHoverEffect() } catch (e) { console.warn('initNavHoverEffect:', e) }
 
-// ── Enigma-style Hero Entrance (runs after preloader) ─
+// ── Hero Entrance Sequence (single source of truth for ALL hero animations) ─
 function initHeroEntranceSequence() {
   if (prefersReducedMotion) return
-  if (!preloaderWillRun()) return // Skip if preloader won't run
+  if (!preloaderWillRun()) return
 
-  const eyebrow = document.querySelector('.hero-copy [data-hero-eyebrow]')
-  const heroText = document.querySelector('.hero-copy .hero-text')
+  const h1         = document.querySelector('.hero-copy h1')
+  const eyebrow    = document.querySelector('.hero-copy [data-hero-eyebrow]')
+  const heroText   = document.querySelector('.hero-copy .hero-text')
   const heroActions = document.querySelector('.hero-copy .hero-actions')
   const heroMetrics = document.querySelectorAll('.hero-metrics div')
 
-  // Hide hero elements initially (they animate in after preloader)
-  const elementsToHide = [eyebrow, heroText, heroActions, ...Array.from(heroMetrics)].filter(Boolean)
+  // Hide ALL hero children initially — h1 included
+  const elementsToHide = [eyebrow, h1, heroText, heroActions, ...Array.from(heroMetrics)].filter(Boolean)
   gsap.set(elementsToHide, { opacity: 0 })
-
 
   function runEntrance() {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
+    // Eyebrow
     if (eyebrow) {
       tl.fromTo(eyebrow,
         { opacity: 0, y: 14, filter: 'blur(4px)' },
-        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.6 },
-        0.1
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.55 },
+        0.05
       )
-      setTimeout(() => eyebrow.classList.add('is-active'), 800)
+      setTimeout(() => eyebrow.classList.add('is-active'), 700)
     }
 
+    // H1 — word curtain slide-up
+    if (h1) {
+      const raw = h1.textContent.trim()
+      if (raw) {
+        h1.innerHTML = raw.split(/\s+/).filter(Boolean)
+          .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
+          .join(' ')
+      }
+      const wordInners = h1.querySelectorAll('.reveal-word-inner')
+      if (wordInners.length) {
+        gsap.set(wordInners, { yPercent: 110 })
+        tl.to(wordInners, { yPercent: 0, duration: 0.78, stagger: 0.055, ease: 'power3.out' }, 0.22)
+      } else {
+        tl.fromTo(h1, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.75 }, 0.22)
+      }
+    }
+
+    // Paragraph text — word curtain
     if (heroText) {
       const words = heroText.textContent.split(/\s+/).filter(Boolean)
       heroText.innerHTML = words
@@ -1468,34 +1474,28 @@ function initHeroEntranceSequence() {
         .join(' ')
       const wordInners = heroText.querySelectorAll('.reveal-word-inner')
       gsap.set(wordInners, { yPercent: 110 })
-      tl.to(wordInners, {
-        yPercent: 0, duration: 0.72, stagger: 0.04, ease: 'power3.out',
-      }, 0.45)
+      tl.to(wordInners, { yPercent: 0, duration: 0.68, stagger: 0.03, ease: 'power3.out' }, 0.52)
     }
 
+    // CTA buttons
     if (heroActions) {
-      tl.fromTo(heroActions,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.65 },
-        0.8
-      )
+      tl.fromTo(heroActions, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, 0.82)
     }
 
+    // Metrics
     if (heroMetrics.length) {
       tl.fromTo(heroMetrics,
         { opacity: 0, y: 24, scale: 0.94 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.1 },
-        1.0
+        { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.1 },
+        1.02
       )
     }
   }
 
   window.addEventListener('preloader-done', runEntrance, { once: true })
 
-  // Safety fallback: if preloader-done somehow doesn't fire, reveal after 12s
-  setTimeout(() => {
-    gsap.to(elementsToHide, { opacity: 1, duration: 0.5 })
-  }, 12000)
+  // 12s fallback in case preloader-done never fires
+  setTimeout(() => gsap.to(elementsToHide, { opacity: 1, duration: 0.5 }), 12000)
 }
 try { initHeroEntranceSequence() } catch (e) { console.warn('initHeroEntranceSequence:', e) }
 

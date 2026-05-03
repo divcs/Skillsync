@@ -1031,27 +1031,24 @@ function initNavbarScroll() {
 function initHeroWordReveal() {
   const h1 = document.querySelector('.hero-copy h1')
   if (!h1 || prefersReducedMotion) return
+  if (h1.dataset.revealDone) return
+  h1.dataset.revealDone = '1'
 
-  const text = h1.innerText
+  const text = h1.innerText.trim()
   const words = text.split(/\s+/).filter(Boolean)
   h1.innerHTML = words
-    .map((w) => `<span class="word"><span class="word-inner">${w}</span></span>`)
+    .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
     .join(' ')
 
-  const wordInners = h1.querySelectorAll('.word-inner')
-  gsap.fromTo(
-    wordInners,
-    { y: '110%', opacity: 0, rotateX: -20 },
-    {
-      y: '0%',
-      opacity: 1,
-      rotateX: 0,
-      duration: 0.75,
-      stagger: 0.08,
-      ease: 'power3.out',
-      delay: 0.15,
-    },
-  )
+  const wordInners = h1.querySelectorAll('.reveal-word-inner')
+  gsap.set(wordInners, { yPercent: 110 })
+  gsap.to(wordInners, {
+    yPercent: 0,
+    duration: 0.82,
+    stagger: 0.07,
+    ease: 'power3.out',
+    delay: 0.2,
+  })
 }
 
 // ── Seamless Marquee Ticker ───────────────────────────
@@ -1218,35 +1215,79 @@ function initCounters() {
 }
 try { initCounters() } catch (e) { console.warn('initCounters:', e) }
 
-// ── Text Scramble Reveal ───────────────────────────────
-function initTextScramble() {
-  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%'
-  document.querySelectorAll('[data-scramble]').forEach((el) => {
-    const original = el.textContent
+// ── Text Reveal — Word Curtain Slide-Up ──────────────
+// Automatically applies to ALL section headings — no attribute needed
+function initTextReveal() {
+  if (prefersReducedMotion) return
+
+  // Target every h2 in the page, plus blog-hero h1
+  const headings = [
+    ...document.querySelectorAll('h2'),
+    ...document.querySelectorAll('.blog-hero h1'),
+  ]
+
+  headings.forEach((el) => {
+    // Skip if already processed by another function
+    if (el.dataset.revealDone) return
+    el.dataset.revealDone = '1'
+
+    const raw = el.innerText.trim()
+    if (!raw) return
+
+    // Split each word into overflow:hidden wrapper
+    const words = raw.split(/\s+/).filter(Boolean)
+    el.innerHTML = words
+      .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
+      .join(' ')
+
+    const inners = el.querySelectorAll('.reveal-word-inner')
+    gsap.set(inners, { yPercent: 108 })
+
+    // Immediately make parent [data-reveal] container visible so the
+    // h2 is not hidden behind an opacity:0 parent block
+    const revealParent = el.closest('[data-reveal]')
+    if (revealParent) {
+      gsap.set(revealParent, { opacity: 1, y: 0 })
+      revealParent.classList.add('is-visible')
+    }
+
     ScrollTrigger.create({
       trigger: el,
-      start: 'top 82%',
+      start: 'top 88%',
       once: true,
       onEnter: () => {
-        let frame = 0
-        const totalFrames = 26
-        const id = setInterval(() => {
-          el.textContent = original
-            .split('')
-            .map((ch, i) => {
-              if (ch === ' ') return ' '
-              if (frame / totalFrames > i / original.length) return ch
-              return CHARS[Math.floor(Math.random() * CHARS.length)]
-            })
-            .join('')
-          frame++
-          if (frame > totalFrames) { el.textContent = original; clearInterval(id) }
-        }, 28)
+        gsap.to(inners, {
+          yPercent: 0,
+          duration: 0.82,
+          stagger: 0.052,
+          ease: 'power3.out',
+        })
+      },
+    })
+  })
+
+  // Eyebrow labels — blur-clear fade
+  document.querySelectorAll('.eyebrow').forEach((el) => {
+    if (el.dataset.eyebrowDone) return
+    el.dataset.eyebrowDone = '1'
+    gsap.set(el, { opacity: 0, filter: 'blur(5px)', y: 5 })
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 90%',
+      once: true,
+      onEnter: () => {
+        gsap.to(el, {
+          opacity: 1,
+          filter: 'blur(0px)',
+          y: 0,
+          duration: 0.65,
+          ease: 'power2.out',
+        })
       },
     })
   })
 }
-try { initTextScramble() } catch (e) { console.warn('initTextScramble:', e) }
+try { initTextReveal() } catch (e) { console.warn('initTextReveal:', e) }
 
 // ── Gradient Border Mouse Tracking (service cards) ────
 function initGradientBorder() {

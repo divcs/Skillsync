@@ -2183,15 +2183,8 @@ svg defs {
 /* ─────────────────────────────────────────────
    HERO H1 — word-split reveal states
 ───────────────────────────────────────────── */
-.hero h1 .word {
-  display: inline-block;
-  overflow: hidden;
-}
-
-.hero h1 .word-inner {
-  display: inline-block;
-  will-change: transform, opacity;
-}
+/* Hero h1 uses the shared .reveal-word-wrap / .reveal-word-inner curtain system
+   defined in the WORD CURTAIN REVEAL section below */
 
 /* ─────────────────────────────────────────────
    HERO METRICS — animated counters shimmer
@@ -2524,10 +2517,24 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
 }
 
 /* ─────────────────────────────────────────────
-   TEXT SCRAMBLE
+   WORD CURTAIN REVEAL
+   Wraps split by JS: .reveal-word-wrap > .reveal-word-inner
 ───────────────────────────────────────────── */
-[data-scramble] {
-  will-change: contents;
+.reveal-word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  /* Align to text baseline so words sit naturally */
+  vertical-align: bottom;
+  /* Tiny extra space so descenders don't clip */
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+  line-height: inherit;
+}
+
+.reveal-word-inner {
+  display: inline-block;
+  will-change: transform;
+  line-height: inherit;
 }
 
 /* ─────────────────────────────────────────────

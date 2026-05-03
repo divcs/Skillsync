@@ -144,69 +144,51 @@ function runLogoLoader() {
 
   logoLoader.style.display = 'flex'
   gsap.set('#logo-loader', { yPercent: 0 })
-
-  // Set initial hidden states
-  gsap.set('.loader-logo', { opacity: 0, scale: 0.72, filter: 'blur(8px)' })
-  gsap.set('.loader-brand', { opacity: 0, y: 14 })
+  gsap.set('.loader-lottie-wrap', { opacity: 0, scale: 0.75 })
+  gsap.set('.loader-brand', { opacity: 0, y: 16 })
   gsap.set('.loader-sub', { opacity: 0, y: 10 })
   gsap.set('.loader-line', { opacity: 0 })
   gsap.set('.loader-line span', { x: '-100%' })
 
+  // Load the Lottie JSON animation
+  const lottieContainer = document.getElementById('logo-loader-lottie')
+  let loaderAnim = null
+  if (typeof lottie !== 'undefined' && lottieContainer) {
+    loaderAnim = lottie.loadAnimation({
+      container: lottieContainer,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: encodeURI(LOGO_LOTTIE_PATH),
+      rendererSettings: {
+        preserveAspectRatio: 'xMidYMid slice',
+        progressiveLoad: true,
+      },
+    })
+  }
+
   return new Promise((resolve) => {
     const tl = gsap.timeline({
       onComplete: () => {
+        if (loaderAnim) loaderAnim.destroy()
         logoLoader.style.display = 'none'
         resolve()
       },
     })
 
     tl
-      // 1 — logo reveal
-      .to('.loader-logo', {
-        opacity: 1,
-        scale: 1,
-        filter: 'blur(0px)',
-        duration: 0.9,
-        ease: 'power3.out',
-      })
-      // 2 — brand text
-      .to('.loader-brand', {
-        opacity: 1,
-        y: 0,
-        duration: 0.55,
-        ease: 'power2.out',
-      }, '-=0.45')
-      // 3 — tagline
-      .to('.loader-sub', {
-        opacity: 1,
-        y: 0,
-        duration: 0.45,
-        ease: 'power2.out',
-      }, '-=0.3')
-      // 4 — line fade + shimmer sweep
-      .to('.loader-line', { opacity: 1, duration: 0.3 }, '-=0.2')
-      .to('.loader-line span', {
-        x: '220%',
-        duration: 1.1,
-        ease: 'power2.inOut',
-      })
-      // 5 — hold a moment
-      .to({}, { duration: 0.4 })
-      // 6 — content fades up
-      .to('.loader-content', {
-        opacity: 0,
-        y: -18,
-        duration: 0.45,
-        ease: 'power2.in',
-      })
-      // 7 — full panel slides up (matches preloader transition)
-      .to('#logo-loader', {
-        yPercent: -100,
-        duration: 0.85,
-        ease: 'expo.inOut',
-      }, '-=0.1')
+      .to('.loader-lottie-wrap', { opacity: 1, scale: 1, duration: 0.8, ease: 'power3.out' })
+      .to('.loader-brand', { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, '-=0.4')
+      .to('.loader-sub', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, '-=0.25')
+      .to('.loader-line', { opacity: 1, duration: 0.3 }, '-=0.15')
+      .to('.loader-line span', { x: '220%', duration: 1.1, ease: 'power2.inOut' })
+      .to({}, { duration: 0.5 })
+      .to('.loader-content', { opacity: 0, y: -16, duration: 0.4, ease: 'power2.in' })
+      .to('#logo-loader', { yPercent: -100, duration: 0.85, ease: 'expo.inOut' }, '-=0.1')
   })
 }
+
+
 
 trackInternalNavigationClicks()
 
@@ -706,6 +688,7 @@ function initJourney() {
       loop: false,
       autoplay: false,
       path: 'assets/lottie/1skillsync-fixed.json',
+      preserveAspectRatio: 'xMidYMid slice',
     })
 
     journeyAnimation.addEventListener('DOMLoaded', () => updateJourney(0))
@@ -1211,3 +1194,135 @@ try { initNavbarScroll() } catch (e) { console.warn('initNavbarScroll:', e) }
 try { initMarquee() } catch (e) { console.warn('initMarquee:', e) }
 try { initBackToTop() } catch (e) { console.warn('initBackToTop:', e) }
 try { initEnhancedReveals() } catch (e) { console.warn('initEnhancedReveals:', e) }
+
+// ── Number Counter Animation ───────────────────────────
+function initCounters() {
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const target = parseInt(el.dataset.count, 10)
+    const suffix = el.dataset.suffix || ''
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 85%',
+      once: true,
+      onEnter: () => {
+        const obj = { n: 0 }
+        gsap.to(obj, {
+          n: target,
+          duration: 2.2,
+          ease: 'power2.out',
+          onUpdate() { el.textContent = Math.round(obj.n) + suffix },
+        })
+      },
+    })
+  })
+}
+try { initCounters() } catch (e) { console.warn('initCounters:', e) }
+
+// ── Text Scramble Reveal ───────────────────────────────
+function initTextScramble() {
+  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%'
+  document.querySelectorAll('[data-scramble]').forEach((el) => {
+    const original = el.textContent
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 82%',
+      once: true,
+      onEnter: () => {
+        let frame = 0
+        const totalFrames = 26
+        const id = setInterval(() => {
+          el.textContent = original
+            .split('')
+            .map((ch, i) => {
+              if (ch === ' ') return ' '
+              if (frame / totalFrames > i / original.length) return ch
+              return CHARS[Math.floor(Math.random() * CHARS.length)]
+            })
+            .join('')
+          frame++
+          if (frame > totalFrames) { el.textContent = original; clearInterval(id) }
+        }, 28)
+      },
+    })
+  })
+}
+try { initTextScramble() } catch (e) { console.warn('initTextScramble:', e) }
+
+// ── Gradient Border Mouse Tracking (service cards) ────
+function initGradientBorder() {
+  document.querySelectorAll('.service-card').forEach((card) => {
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect()
+      card.style.setProperty('--gx', `${e.clientX - r.left}px`)
+      card.style.setProperty('--gy', `${e.clientY - r.top}px`)
+    })
+  })
+}
+try { initGradientBorder() } catch (e) { console.warn('initGradientBorder:', e) }
+
+// ── Cursor Spotlight (hero) ────────────────────────────
+function initCursorSpotlight() {
+  const hero = document.querySelector('.hero')
+  if (!hero) return
+  hero.addEventListener('mouseenter', () => hero.classList.add('has-spotlight'))
+  hero.addEventListener('mouseleave', () => hero.classList.remove('has-spotlight'))
+  hero.addEventListener('mousemove', (e) => {
+    const r = hero.getBoundingClientRect()
+    hero.style.setProperty('--spotlight-x', `${e.clientX - r.left}px`)
+    hero.style.setProperty('--spotlight-y', `${e.clientY - r.top}px`)
+  })
+}
+try { initCursorSpotlight() } catch (e) { console.warn('initCursorSpotlight:', e) }
+
+// ── Particle Star Field (hero canvas) ─────────────────
+function initParticles() {
+  const canvas = document.getElementById('hero-particles')
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  let W, H, stars = []
+
+  const resize = () => {
+    const hero = canvas.parentElement
+    W = canvas.width = hero.offsetWidth
+    H = canvas.height = hero.offsetHeight
+  }
+
+  const mkStar = () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 1.2 + 0.2,
+    a: Math.random(),
+    sp: Math.random() * 0.004 + 0.001,
+    dir: Math.random() > 0.5 ? 1 : -1,
+  })
+
+  resize()
+  stars = Array.from({ length: 120 }, mkStar)
+  window.addEventListener('resize', () => { resize(); stars = Array.from({ length: 120 }, mkStar) })
+
+  let raf
+  const draw = () => {
+    ctx.clearRect(0, 0, W, H)
+    stars.forEach((s) => {
+      s.a += s.sp * s.dir
+      if (s.a > 1 || s.a < 0) s.dir *= -1
+      ctx.beginPath()
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(200, 190, 255, ${s.a * 0.7})`
+      ctx.fill()
+    })
+    raf = requestAnimationFrame(draw)
+  }
+
+  draw()
+
+  // Stop when hero not visible
+  ScrollTrigger.create({
+    trigger: canvas.parentElement,
+    start: 'top top',
+    end: 'bottom top',
+    onLeave: () => cancelAnimationFrame(raf),
+    onEnterBack: () => draw(),
+  })
+}
+try { initParticles() } catch (e) { console.warn('initParticles:', e) }

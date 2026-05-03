@@ -23,9 +23,7 @@
   <div id="logo-loader" role="status" aria-label="Loading SkillSync">
     <div class="loader-bg-glow"></div>
     <div class="loader-content">
-      <div class="loader-logo-wrap">
-        <img src="assets/logobw.svg" class="loader-logo" alt="SkillSync">
-      </div>
+      <div id="logo-loader-lottie" class="loader-lottie-wrap"></div>
       <p class="loader-brand">SKILLSYNC</p>
       <p class="loader-sub">USA Career Transformation</p>
       <div class="loader-line"><span></span></div>
@@ -67,6 +65,7 @@
         <a class="cursor-hover" href="index.html">Home</a>
         <a class="cursor-hover" href="services.html">Services</a>
         <a class="cursor-hover" href="about.html">About</a>
+        <a class="cursor-hover" href="blog.html">Blog</a>
         <a class="cursor-hover" href="contact.html">Contact</a>
       </nav>
       <a class="nav-cta button button-small cursor-hover magnetic" href="contact.html">Book Strategy Call</a>
@@ -76,6 +75,7 @@
   <main id="top">
     <section class="hero section">
       <div class="hero-scene" aria-hidden="true">
+        <canvas id="hero-particles" class="hero-particles"></canvas>
         <div class="sky-glow sky-glow-a"></div>
         <div class="sky-glow sky-glow-b"></div>
         <div class="orb orb-a" data-parallax="0.25"></div>
@@ -94,7 +94,7 @@
       <div class="container hero-layout">
         <div class="hero-copy" data-reveal>
           <p class="eyebrow">USA Career Transformation Experience</p>
-          <h1>From Student to Job-Ready Professional</h1>
+          <h1 data-scramble>From Student to Job-Ready Professional</h1>
           <p class="hero-text">
             SkillSync helps students decode the USA job market, sharpen what employers actually hire for, and step into
             interviews with proof, presence, and positioning.
@@ -105,11 +105,11 @@
           </div>
           <div class="hero-metrics">
             <div>
-              <span>1200+</span>
+              <span data-count="1200" data-suffix="+">1200+</span>
               <p>students coached into market-ready candidates</p>
             </div>
             <div>
-              <span>4-step</span>
+              <span data-count="4" data-suffix="-step">4-step</span>
               <p>journey from confusion to confident applications</p>
             </div>
             <div>
@@ -149,7 +149,7 @@
     <section id="journey" class="journey section">
       <div class="container section-intro" data-reveal>
         <p class="eyebrow">Scroll-Based Storytelling</p>
-        <h2>A guided transformation built for ambitious students targeting the USA</h2>
+        <h2 data-scramble>A guided transformation built for ambitious students targeting the USA</h2>
       </div>
 
       <div class="journey-track">
@@ -526,6 +526,69 @@
             <div class="faq-answer">
               <p>You can book a strategy call immediately, and most students begin their clarity sprint within a few
                 days.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLOG PREVIEW -->
+    <section class="blog-preview">
+      <div class="container">
+        <div class="blog-preview-header">
+          <div class="section-intro" data-reveal>
+            <p class="eyebrow">From The Blog</p>
+            <h2>Career insights, straight from our coaches</h2>
+          </div>
+          <a class="blog-preview-link cursor-hover" href="blog.html">
+            View All Posts
+            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="blog-grid">
+          <article class="blog-card" data-reveal>
+            <div class="blog-card-thumb">
+              <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=450&fit=crop" alt="Resume writing">
+              <div class="blog-card-thumb-overlay"></div>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-tag">Resume</span>
+              <h2>5 Resume Mistakes That Are Costing You USA Job Interviews</h2>
+              <p>Most resumes fail in the first 6 seconds. Here's what US recruiters actually look for.</p>
+              <div class="blog-card-meta">
+                <span>May 2, 2026 · 6 min read</span>
+                <a class="blog-read-link cursor-hover" href="blog.html">Read <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+              </div>
+            </div>
+          </article>
+          <article class="blog-card" data-reveal>
+            <div class="blog-card-thumb">
+              <img src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=800&h=450&fit=crop" alt="Interview prep">
+              <div class="blog-card-thumb-overlay"></div>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-tag">Interview</span>
+              <h2>How to Crack Your First USA Tech Interview: A Complete Guide</h2>
+              <p>The structured framework our students use to walk into interviews calm, sharp, and ready.</p>
+              <div class="blog-card-meta">
+                <span>Apr 28, 2026 · 9 min read</span>
+                <a class="blog-read-link cursor-hover" href="blog.html">Read <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+              </div>
+            </div>
+          </article>
+          <article class="blog-card" data-reveal>
+            <div class="blog-card-thumb">
+              <img src="https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=800&h=450&fit=crop" alt="Salary negotiation">
+              <div class="blog-card-thumb-overlay"></div>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-tag">Negotiation</span>
+              <h2>Salary Negotiation: How to Counter Your First US Job Offer</h2>
+              <p>The exact language and timing to negotiate $8–15K higher without risking the offer.</p>
+              <div class="blog-card-meta">
+                <span>Mar 30, 2026 · 7 min read</span>
+                <a class="blog-read-link cursor-hover" href="blog.html">Read <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+              </div>
             </div>
           </article>
         </div>

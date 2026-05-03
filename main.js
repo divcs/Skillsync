@@ -27,7 +27,8 @@ let carouselTimer
 let journeyAnimation
 const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
 const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
-const LOGO_LOTTIE_PATH = 'assets/lottie/1skillsync-fixed.json'
+const LOGO_LOTTIE_PATH = 'assets/skillsync.json'
+const LOGO_VIDEO_PATH = 'assets/Skillsync-up-down.mp4'
 
 function safeStorageGet(storage, key) {
   try {
@@ -153,16 +154,23 @@ function runLogoLoader() {
   gsap.set('#logo-loader', { autoAlpha: 1 })
 
   return new Promise((resolve) => {
-    let animation = null
     let completed = false
+    let fallbackTimer = null
+    let videoElement = null
 
     const finish = () => {
       if (completed) return
       completed = true
       console.log('[SkillSync Loader] Finishing logo loader')
 
-      if (animation) {
-        animation.destroy()
+      if (fallbackTimer) {
+        window.clearTimeout(fallbackTimer)
+      }
+
+      if (videoElement) {
+        videoElement.pause()
+        videoElement.removeAttribute('src')
+        videoElement.load()
       }
 
       gsap.to('#logo-loader', {
@@ -177,42 +185,36 @@ function runLogoLoader() {
       })
     }
 
-    animation = loadLottieAnimation({
-      container: 'logo-loader-lottie',
-      path: LOGO_LOTTIE_PATH,
-      loop: false,
-      autoplay: true,
-      speed: 0.8,
+    videoElement = document.createElement('video')
+    videoElement.className = 'logo-loader-video'
+    videoElement.src = LOGO_VIDEO_PATH
+    videoElement.muted = true
+    videoElement.autoplay = true
+    videoElement.playsInline = true
+    videoElement.preload = 'auto'
+    videoElement.controls = false
+
+    logoLottieContainer.appendChild(videoElement)
+
+    const handleEnded = () => {
+      console.log('[SkillSync Loader] Logo video completed')
+      finish()
+    }
+
+    const handleError = () => {
+      console.log('[SkillSync Loader] Logo video failed to load')
+      finish()
+    }
+
+    videoElement.addEventListener('ended', handleEnded, { once: true })
+    videoElement.addEventListener('error', handleError, { once: true })
+
+    videoElement.play().catch(() => {
+      console.log('[SkillSync Loader] Logo video autoplay blocked, continuing')
+      finish()
     })
 
-    if (!animation) {
-      console.log('[SkillSync Loader] Lottie animation failed to load, using fallback')
-      gsap.fromTo(
-        '#logo-loader-lottie',
-        { autoAlpha: 0, scale: 0.92 },
-        {
-          autoAlpha: 1,
-          scale: 1,
-          duration: 0.7,
-          ease: 'power2.out',
-          onComplete: () => {
-            gsap.delayedCall(1.2, finish)
-          },
-        },
-      )
-      return
-    }
-
-    const fallbackTimer = window.setTimeout(finish, 4500)
-
-    const onComplete = () => {
-      window.clearTimeout(fallbackTimer)
-      animation.removeEventListener('complete', onComplete)
-      console.log('[SkillSync Loader] Logo animation completed')
-      gsap.delayedCall(0.15, finish)
-    }
-
-    animation.addEventListener('complete', onComplete)
+    fallbackTimer = window.setTimeout(finish, 8000)
   })
 }
 

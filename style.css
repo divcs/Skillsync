@@ -2131,3 +2131,312 @@ svg defs {
     display: none;
   }
 }
+
+/* ─────────────────────────────────────────────
+   SCROLL PROGRESS BAR
+───────────────────────────────────────────── */
+#scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8b5cf6, #22d3ee, #f472b6);
+  transform-origin: left center;
+  transform: scaleX(0);
+  z-index: 10001;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────
+   NAVBAR — scroll-active glassmorphism boost
+───────────────────────────────────────────── */
+.site-header.scrolled .nav-shell {
+  background: rgba(4, 9, 22, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.12);
+  transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+/* ─────────────────────────────────────────────
+   LOADER — improved exit clip-path wipe
+───────────────────────────────────────────── */
+#logo-loader.is-wiping {
+  clip-path: inset(0 0 100% 0) !important;
+  transition: clip-path 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ─────────────────────────────────────────────
+   HERO H1 — word-split reveal states
+───────────────────────────────────────────── */
+.hero h1 .word {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.hero h1 .word-inner {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* ─────────────────────────────────────────────
+   HERO METRICS — animated counters shimmer
+───────────────────────────────────────────── */
+.hero-metrics div {
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.hero-metrics div:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.15);
+}
+
+/* ─────────────────────────────────────────────
+   COMPANY MARQUEE
+───────────────────────────────────────────── */
+.marquee-section {
+  overflow: hidden;
+  padding: 48px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.marquee-section::before,
+.marquee-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.marquee-section::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg), transparent);
+}
+
+.marquee-section::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg), transparent);
+}
+
+.marquee-eyebrow {
+  text-align: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.3);
+  margin-bottom: 28px;
+}
+
+.marquee-inner {
+  display: flex;
+  width: max-content;
+  gap: 0;
+  user-select: none;
+}
+
+.marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 52px;
+  padding-right: 52px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.marquee-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(226, 232, 240, 0.28);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.35s ease;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.marquee-item:hover {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.marquee-item svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+
+.marquee-separator {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.5);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   BACK TO TOP BUTTON
+───────────────────────────────────────────── */
+#back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 100px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.9), rgba(34, 211, 238, 0.8));
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  z-index: 29;
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: box-shadow 0.3s ease;
+  box-shadow: 0 8px 28px rgba(124, 58, 237, 0.35);
+  will-change: opacity, transform;
+}
+
+#back-to-top:hover {
+  box-shadow: 0 12px 36px rgba(124, 58, 237, 0.55), 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+#back-to-top svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#back-to-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ─────────────────────────────────────────────
+   STAGE CARD — click ripple
+───────────────────────────────────────────── */
+.stage-card {
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.stage-card:hover {
+  border-color: rgba(139, 92, 246, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ─────────────────────────────────────────────
+   TEAM CARD — hover lift
+───────────────────────────────────────────── */
+.team-card {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 28px 60px rgba(2, 6, 23, 0.5),
+    0 0 0 1px rgba(139, 92, 246, 0.18);
+}
+
+/* ─────────────────────────────────────────────
+   SALARY BADGE — pulse glow
+───────────────────────────────────────────── */
+.salary-badge {
+  animation: badgePulse 3s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 18px rgba(139, 92, 246, 0.35); }
+}
+
+/* ─────────────────────────────────────────────
+   BUTTON — shimmer sweep on hover
+───────────────────────────────────────────── */
+.button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.16) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.button:hover::before {
+  animation: btnShimmer 0.6s ease forwards;
+}
+
+@keyframes btnShimmer {
+  to { transform: translateX(220%); }
+}
+
+/* ─────────────────────────────────────────────
+   JOURNEY VISUAL — step-specific glow colors
+───────────────────────────────────────────── */
+body[data-stage='0'] .journey-glow {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.24), transparent 68%);
+}
+body[data-stage='1'] .journey-glow {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.28), transparent 68%);
+}
+body[data-stage='2'] .journey-glow {
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.26), transparent 68%);
+}
+body[data-stage='3'] .journey-glow {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 68%);
+}
+
+/* Stage-specific icon backgrounds */
+.lottie-shell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  transition: border-color 0.4s ease;
+}
+
+body[data-stage='0'] .lottie-shell::after { border-color: rgba(34, 211, 238, 0.18); }
+body[data-stage='1'] .lottie-shell::after { border-color: rgba(34, 211, 238, 0.22); }
+body[data-stage='2'] .lottie-shell::after { border-color: rgba(244, 114, 182, 0.18); }
+body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.25); }
+
+/* ─────────────────────────────────────────────
+   FORM FIELD — enhanced focus ring
+───────────────────────────────────────────── */
+.field input:focus,
+.field textarea:focus {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1), 0 0 20px rgba(34, 211, 238, 0.08);
+}
+
+/* ─────────────────────────────────────────────
+   MOBILE: hide back-to-top at small viewports
+───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #back-to-top {
+    right: 16px;
+    bottom: 90px;
+    width: 42px;
+    height: 42px;
+  }
+}

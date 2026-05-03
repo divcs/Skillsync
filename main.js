@@ -378,6 +378,9 @@ async function initPreloader() {
     onComplete: () => {
       preloader.style.display = 'none'
       document.body.classList.remove('is-loading')
+      // Fire hero word reveal now that preloader is gone
+      try { initHeroWordReveal() } catch (e) { /* not yet defined */ }
+      window.dispatchEvent(new CustomEvent('preloader-done'))
     },
   })
 }
@@ -1052,3 +1055,207 @@ function initMobileMenu() {
     }
   })
 }
+
+/* ═══════════════════════════════════════════════════════
+   PREMIUM ADDITIONS — Scroll Progress, Navbar Glass,
+   Hero Word Split, Marquee Ticker, Back-to-Top, Reveals
+═══════════════════════════════════════════════════════ */
+
+if (typeof ScrollToPlugin !== 'undefined') {
+  gsap.registerPlugin(ScrollToPlugin)
+}
+
+// ── Scroll Progress Bar ──────────────────────────────
+function initScrollProgress() {
+  const bar = document.getElementById('scroll-progress')
+  if (!bar) return
+  gsap.to(bar, {
+    scaleX: 1,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: document.documentElement,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.25,
+    },
+  })
+}
+
+// ── Navbar Scroll Glassmorphism ───────────────────────
+function initNavbarScroll() {
+  const header = document.querySelector('.site-header')
+  if (!header) return
+  ScrollTrigger.create({
+    start: 'top -72',
+    onEnter: () => header.classList.add('scrolled'),
+    onLeaveBack: () => header.classList.remove('scrolled'),
+  })
+}
+
+// ── Hero H1 Word-Split Reveal ────────────────────────
+function initHeroWordReveal() {
+  const h1 = document.querySelector('.hero-copy h1')
+  if (!h1 || prefersReducedMotion) return
+
+  const text = h1.innerText
+  const words = text.split(/\s+/).filter(Boolean)
+  h1.innerHTML = words
+    .map((w) => `<span class="word"><span class="word-inner">${w}</span></span>`)
+    .join(' ')
+
+  const wordInners = h1.querySelectorAll('.word-inner')
+  gsap.fromTo(
+    wordInners,
+    { y: '110%', opacity: 0, rotateX: -20 },
+    {
+      y: '0%',
+      opacity: 1,
+      rotateX: 0,
+      duration: 0.75,
+      stagger: 0.08,
+      ease: 'power3.out',
+      delay: 0.15,
+    },
+  )
+}
+
+// ── Seamless Marquee Ticker ───────────────────────────
+function initMarquee() {
+  const inner = document.getElementById('marquee-inner')
+  if (!inner) return
+  const track = inner.querySelector('.marquee-track')
+  if (!track) return
+
+  const clone = track.cloneNode(true)
+  inner.appendChild(clone)
+
+  const tracks = inner.querySelectorAll('.marquee-track')
+  const tl = gsap.timeline({ repeat: -1, defaults: { ease: 'none' } })
+  tl.to(tracks, { xPercent: -100, duration: 30 })
+  tl.set(tracks, { xPercent: 0 })
+
+  inner.addEventListener('mouseenter', () => tl.timeScale(0.2))
+  inner.addEventListener('mouseleave', () => tl.timeScale(1))
+}
+
+// ── Back To Top ──────────────────────────────────────
+function initBackToTop() {
+  const btn = document.getElementById('back-to-top')
+  if (!btn) return
+
+  ScrollTrigger.create({
+    start: 'top -500',
+    onEnter: () => btn.classList.add('is-visible'),
+    onLeaveBack: () => btn.classList.remove('is-visible'),
+  })
+
+  btn.addEventListener('click', () => {
+    if (typeof ScrollToPlugin !== 'undefined') {
+      gsap.to(window, { scrollTo: 0, duration: 1.1, ease: 'power3.inOut' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  })
+}
+
+// ── Enhanced Section Stagger Reveals ─────────────────
+function initEnhancedReveals() {
+  if (prefersReducedMotion) return
+
+  // Service cards
+  const serviceCards = document.querySelectorAll('.service-card')
+  if (serviceCards.length) {
+    gsap.fromTo(
+      serviceCards,
+      { y: 60, opacity: 0, scale: 0.95 },
+      {
+        y: 0, opacity: 1, scale: 1,
+        duration: 0.7, stagger: 0.12, ease: 'power3.out',
+        scrollTrigger: {
+          trigger: serviceCards[0].parentElement,
+          start: 'top 78%',
+          toggleActions: 'play none none none',
+        },
+      },
+    )
+  }
+
+  // Team cards
+  const teamCards = document.querySelectorAll('.team-card')
+  if (teamCards.length) {
+    gsap.fromTo(
+      teamCards,
+      { y: 50, opacity: 0, scale: 0.92 },
+      {
+        y: 0, opacity: 1, scale: 1,
+        duration: 0.65, stagger: 0.14, ease: 'back.out(1.2)',
+        scrollTrigger: {
+          trigger: teamCards[0].parentElement,
+          start: 'top 78%',
+          toggleActions: 'play none none none',
+        },
+      },
+    )
+  }
+
+  // FAQ items
+  const faqItemEls = document.querySelectorAll('.faq-item')
+  if (faqItemEls.length) {
+    gsap.fromTo(
+      faqItemEls,
+      { x: -30, opacity: 0 },
+      {
+        x: 0, opacity: 1,
+        duration: 0.6, stagger: 0.1, ease: 'power2.out',
+        scrollTrigger: {
+          trigger: faqItemEls[0].parentElement,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      },
+    )
+  }
+
+  // Contact section
+  const contactShell = document.querySelector('.contact-shell')
+  if (contactShell) {
+    gsap.fromTo(
+      contactShell,
+      { y: 60, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 1, ease: 'power3.out',
+        scrollTrigger: {
+          trigger: contactShell,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      },
+    )
+  }
+
+  // Hero panel floating levitation
+  const heroPanel = document.querySelector('.hero-panel')
+  if (heroPanel) {
+    gsap.to(heroPanel, { y: -12, duration: 3.5, yoyo: true, repeat: -1, ease: 'sine.inOut' })
+  }
+}
+
+// ── Patch preloader to dispatch event on exit ─────────
+// Wrap the existing initPreloader's onComplete to also fire a custom event
+const _origInitPreloader = window._origInitPreloader
+window.addEventListener('DOMContentLoaded', () => {
+  // Wait briefly for preloader to finish, then run hero reveal
+  // as a safe fallback (event approach in initPreloader)
+  setTimeout(() => {
+    if (!document.body.classList.contains('is-loading')) {
+      initHeroWordReveal()
+    }
+  }, 7500)
+})
+
+// ── Init ─────────────────────────────────────────────
+try { initScrollProgress() } catch (e) { console.warn('initScrollProgress:', e) }
+try { initNavbarScroll() } catch (e) { console.warn('initNavbarScroll:', e) }
+try { initMarquee() } catch (e) { console.warn('initMarquee:', e) }
+try { initBackToTop() } catch (e) { console.warn('initBackToTop:', e) }
+try { initEnhancedReveals() } catch (e) { console.warn('initEnhancedReveals:', e) }

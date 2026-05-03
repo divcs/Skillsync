@@ -274,7 +274,8 @@ async function initPreloader() {
   for (let i = 0; i < NUM_COLS; i++) {
     const tile = document.createElement('div')
     tile.className = 'preloader-tile'
-    tile.style.cssText = `flex:1;height:100%;background:#020617;`
+    // Pure black — maximum contrast with dark-navy hero (#020617)
+    tile.style.cssText = `flex:1;height:100%;background:#000;`
     tilesContainer.appendChild(tile)
   }
   preloader.appendChild(tilesContainer)
@@ -733,6 +734,14 @@ function initJourney() {
     })
   } else {
     updateJourney(0)
+    // Mobile: no pin, but still advance stages + percentage via scroll
+    ScrollTrigger.create({
+      trigger: '.journey-track',
+      start: 'top 70%',
+      end: 'bottom 30%',
+      scrub: 0.5,
+      onUpdate: ({ progress }) => updateJourney(progress),
+    })
   }
 
   stageCards.forEach((card) => {
@@ -1450,7 +1459,10 @@ function initHeroEntranceSequence() {
     }
 
     // H1 — word curtain slide-up
+    // IMPORTANT: h1 was set to opacity:0 via elementsToHide;
+    // restore container to opacity:1 first so word-inners are visible
     if (h1) {
+      tl.set(h1, { opacity: 1 }, 0.15)
       const raw = h1.textContent.trim()
       if (raw) {
         h1.innerHTML = raw.split(/\s+/).filter(Boolean)

@@ -426,16 +426,24 @@ button {
   margin: 0;
   font-family: 'Syne', sans-serif;
   font-weight: 700;
-  line-height: 0.95;
+  line-height: 1.0;
   letter-spacing: -0.04em;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .hero-copy h1 {
-  margin: 0 0 clamp(1.25rem, 2.5vw, 2rem);
+  /* Fluid scale: 2.2rem on 320px → 7.2rem on desktop */
+  font-size: clamp(2.2rem, 8.5vw, 7.2rem);
+  max-width: 12ch;
+  margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
   font-family: 'Syne', sans-serif;
   font-weight: 700;
-  line-height: 0.95;
+  /* 1.05 leaves enough room so overflow:hidden wraps don’t clip descenders */
+  line-height: 1.05;
   letter-spacing: -0.04em;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .section-intro h2 {
@@ -584,10 +592,7 @@ button {
   align-items: center;
 }
 
-.hero h1 {
-  opacity: 0;
-  transform: translateY(40px);
-}
+
 
 .hero-layout {
   position: relative;
@@ -598,10 +603,6 @@ button {
   gap: 48px;
 }
 
-.hero-copy h1 {
-  font-size: clamp(3.6rem, 9vw, 7.2rem);
-  max-width: 10ch;
-}
 
 .hero-text,
 .contact-copy p,
@@ -2691,12 +2692,12 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
 .reveal-word-wrap {
   display: inline-block;
   overflow: hidden;
-  /* Align to text baseline so words sit naturally */
   vertical-align: bottom;
+  /* 1.2 ensures the clip box is tall enough for ascenders + descenders */
+  line-height: 1.2;
   /* Tiny extra space so descenders don't clip */
-  padding-bottom: 0.06em;
-  margin-bottom: -0.06em;
-  line-height: inherit;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
 }
 
 .reveal-word-inner {

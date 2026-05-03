@@ -21,6 +21,7 @@ const progressLength = 2 * Math.PI * 88
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)',
 ).matches
+const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches
 const accentAnimations = {}
 let currentSlide = 0
 let carouselTimer
@@ -424,6 +425,15 @@ function initTeamAvatars() {
 try { initTeamAvatars() } catch (e) { console.warn('initTeamAvatars error:', e) }
 
 function initLenis() {
+  // Disable Lenis smooth scroll on touch/mobile devices.
+  // Native momentum scrolling is far more performant on mobile and
+  // Lenis's JS-driven lerp is the primary source of scroll jank.
+  if (isTouchDevice) {
+    // Still wire up ScrollTrigger so all scroll-based animations work
+    window.addEventListener('scroll', ScrollTrigger.update, { passive: true })
+    return
+  }
+
   const lenis = new Lenis({
     lerp: 0.08,
     smoothWheel: true,
@@ -476,50 +486,58 @@ function initCursor() {
 }
 
 function initHeroParallax() {
-  const sceneItems = document.querySelectorAll('[data-parallax]')
-
-  window.addEventListener('mousemove', (event) => {
-    const x = event.clientX / window.innerWidth - 0.5
-    const y = event.clientY / window.innerHeight - 0.5
-
-    sceneItems.forEach((item) => {
-      const depth = Number(item.dataset.parallax)
-      gsap.to(item, {
-        x: x * depth * 160,
-        y: y * depth * 120,
-        duration: 0.9,
-        ease: 'power3.out',
-        overwrite: true,
+  // Mouse-tracking parallax is desktop-only — on mobile there is no mouse
+  // and firing gsap.to() inside touchmove events is a major jank source.
+  if (!isTouchDevice) {
+    const sceneItems = document.querySelectorAll('[data-parallax]')
+    window.addEventListener('mousemove', (event) => {
+      const x = event.clientX / window.innerWidth - 0.5
+      const y = event.clientY / window.innerHeight - 0.5
+      sceneItems.forEach((item) => {
+        const depth = Number(item.dataset.parallax)
+        gsap.to(item, {
+          x: x * depth * 160,
+          y: y * depth * 120,
+          duration: 0.9,
+          ease: 'power3.out',
+          overwrite: true,
+        })
       })
     })
-  })
+  }
 
-  gsap.to('.sky-glow-a', {
-    xPercent: 8,
-    yPercent: 6,
-    duration: 12,
-    repeat: -1,
-    yoyo: true,
-    ease: 'sine.inOut',
-  })
+  // Ambient glow drifts — keep on mobile but only if not reduced motion
+  if (!prefersReducedMotion) {
+    gsap.to('.sky-glow-a', {
+      xPercent: 8,
+      yPercent: 6,
+      duration: isTouchDevice ? 18 : 12,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+    })
 
-  gsap.to('.sky-glow-b', {
-    xPercent: -10,
-    yPercent: 10,
-    duration: 14,
-    repeat: -1,
-    yoyo: true,
-    ease: 'sine.inOut',
-  })
+    gsap.to('.sky-glow-b', {
+      xPercent: -10,
+      yPercent: 10,
+      duration: isTouchDevice ? 20 : 14,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+    })
 
-  gsap.to('.orb-c', {
-    scale: 1.5,
-    opacity: 0.45,
-    duration: 2.6,
-    repeat: -1,
-    yoyo: true,
-    ease: 'sine.inOut',
-  })
+    gsap.to('.orb-c', {
+      scale: 1.5,
+      opacity: 0.45,
+      duration: 2.6,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+    })
+  }
+
+  // Scroll-based mountain parallax — use scrub:1 on mobile for less frequent updates
+  const scrubVal = isTouchDevice ? 1.5 : true
 
   gsap.to('.hero .mountain-back', {
     yPercent: -10,
@@ -528,7 +546,7 @@ function initHeroParallax() {
       trigger: '.hero',
       start: 'top top',
       end: 'bottom top',
-      scrub: true,
+      scrub: scrubVal,
     },
   })
 
@@ -539,7 +557,7 @@ function initHeroParallax() {
       trigger: '.hero',
       start: 'top top',
       end: 'bottom top',
-      scrub: true,
+      scrub: scrubVal,
     },
   })
 
@@ -550,7 +568,7 @@ function initHeroParallax() {
       trigger: '.hero',
       start: 'top top',
       end: 'bottom top',
-      scrub: true,
+      scrub: scrubVal,
     },
   })
 }
@@ -708,7 +726,8 @@ function initReveals() {
 function initJourney() {
   const lottieTarget = document.getElementById('journey-lottie')
 
-  if (lottieTarget) {
+  // Skip Lottie animation on mobile to reduce GPU/CPU load during scroll
+  if (lottieTarget && !isTouchDevice) {
     journeyAnimation = loadLottieAnimation({
       container: lottieTarget,
       loop: false,
@@ -734,12 +753,12 @@ function initJourney() {
     })
   } else {
     updateJourney(0)
-    // Mobile: no pin, but still advance stages + percentage via scroll
+    // Mobile: use a larger scrub value so onUpdate fires less frequently
     ScrollTrigger.create({
       trigger: '.journey-track',
       start: 'top 70%',
       end: 'bottom 30%',
-      scrub: 0.5,
+      scrub: 1.5,
       onUpdate: ({ progress }) => updateJourney(progress),
     })
   }
@@ -1356,13 +1375,27 @@ try { initCursorSpotlight() } catch (e) { console.warn('initCursorSpotlight:', e
 function initParticles() {
   const canvas = document.getElementById('hero-particles')
   if (!canvas) return
+
+  // On mobile use a reduced particle count and draw on a lower-res canvas
+  // to avoid chewing through CPU on every animation frame during scrolling.
+  const STAR_COUNT = isTouchDevice ? 50 : 120
+  // Lower canvas resolution on mobile (drawn at 0.5x DPR equivalent)
+  const PIXEL_RATIO = isTouchDevice ? 1 : (window.devicePixelRatio || 1)
+
   const ctx = canvas.getContext('2d')
   let W, H, stars = []
 
   const resize = () => {
     const hero = canvas.parentElement
-    W = canvas.width = hero.offsetWidth
-    H = canvas.height = hero.offsetHeight
+    const displayW = hero.offsetWidth
+    const displayH = hero.offsetHeight
+    canvas.width = displayW * PIXEL_RATIO
+    canvas.height = displayH * PIXEL_RATIO
+    canvas.style.width = displayW + 'px'
+    canvas.style.height = displayH + 'px'
+    if (PIXEL_RATIO !== 1) ctx.scale(PIXEL_RATIO, PIXEL_RATIO)
+    W = displayW
+    H = displayH
   }
 
   const mkStar = () => ({
@@ -1375,11 +1408,19 @@ function initParticles() {
   })
 
   resize()
-  stars = Array.from({ length: 120 }, mkStar)
-  window.addEventListener('resize', () => { resize(); stars = Array.from({ length: 120 }, mkStar) })
+  stars = Array.from({ length: STAR_COUNT }, mkStar)
+
+  let resizeTimer
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => { resize(); stars = Array.from({ length: STAR_COUNT }, mkStar) }, 200)
+  }, { passive: true })
 
   let raf
+  let isVisible = true
+
   const draw = () => {
+    if (!isVisible) return
     ctx.clearRect(0, 0, W, H)
     stars.forEach((s) => {
       s.a += s.sp * s.dir
@@ -1394,13 +1435,13 @@ function initParticles() {
 
   draw()
 
-  // Stop when hero not visible
+  // Stop animation entirely when hero scrolls off-screen to save CPU
   ScrollTrigger.create({
     trigger: canvas.parentElement,
     start: 'top top',
     end: 'bottom top',
-    onLeave: () => cancelAnimationFrame(raf),
-    onEnterBack: () => draw(),
+    onLeave: () => { isVisible = false; cancelAnimationFrame(raf) },
+    onEnterBack: () => { isVisible = true; draw() },
   })
 }
 try { initParticles() } catch (e) { console.warn('initParticles:', e) }
@@ -1557,6 +1598,10 @@ try { initSectionAccents() } catch (e) { console.warn('initSectionAccents:', e) 
 
 // ── Enigma-style: Hero panel parallax depth ───────────
 function initHeroPanelDepth() {
+  // Skip entirely on touch devices — mousemove doesn't exist on mobile
+  // and the 3D transform on scroll is a major jank contributor.
+  if (isTouchDevice) return
+
   const panel = document.querySelector('.hero-panel')
   if (!panel) return
 

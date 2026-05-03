@@ -2988,3 +2988,158 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
   }
 }
+
+/* ─────────────────────────────────────────────
+   MOBILE PERFORMANCE OPTIMIZATIONS
+   All rules here target touch/mobile devices only.
+   Goal: zero jank during scroll while keeping all visuals.
+───────────────────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* ── 1. Remove expensive backdrop-filter blurs on mobile ─────
+     backdrop-filter: blur() triggers a full compositing layer and
+     significantly increases GPU load during scroll on mobile.
+     We replace with a solid opaque fallback that looks identical. */
+  .nav-shell {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(6, 12, 26, 0.97);
+  }
+
+  .site-nav {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(6, 12, 26, 0.99);
+  }
+
+  .glass-panel {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(10, 16, 34, 0.92);
+  }
+
+  .team-link {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* ── 2. Reduce expensive CSS filters on scene elements ─────
+     filter: blur() on large elements forces software rasterisation on
+     many mobile GPUs, causing per-frame re-compositing during scroll. */
+  .mountain-front {
+    filter: none;
+  }
+
+  .mountain-mid {
+    filter: none;
+  }
+
+  .fog-a,
+  .fog-b {
+    filter: blur(16px); /* reduced from 24px/34px */
+  }
+
+  .sky-glow-a {
+    filter: blur(16px); /* reduced from 24px */
+  }
+
+  .sky-glow-b {
+    filter: blur(14px); /* reduced from 22px */
+  }
+
+  .loader-bg-glow {
+    filter: blur(32px); /* reduced from 48px */
+  }
+
+  /* ── 3. Scope will-change more precisely on mobile ────────
+     Over-applying will-change creates too many compositing layers and
+     eats into the mobile GPU memory budget, causing jank. Only apply
+     it to elements that are actively being GSAP-animated. */
+  .sky-glow,
+  .orb,
+  .ring,
+  .mountain,
+  .fog,
+  .grid-haze {
+    will-change: auto;
+  }
+
+  .carousel-track {
+    will-change: auto;
+  }
+
+  .letter {
+    will-change: auto;
+  }
+
+  .reveal-word-inner {
+    will-change: auto;
+  }
+
+  .service-card {
+    /* Disable 3D card tilt on mobile (no mousemove to drive it) */
+    transform-style: flat;
+    will-change: auto;
+  }
+
+  /* ── 4. content-visibility for offscreen sections ────────
+     Tells the browser to skip layout + paint for sections not yet
+     on screen. This is one of the highest-ROI mobile perf tricks.
+     contain-intrinsic-size prevents layout shift when the section
+     enters the viewport. */
+  .services,
+  .journey,
+  .testimonials,
+  .team,
+  .faq,
+  .contact,
+  .blog-preview {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 600px;
+  }
+
+  /* ── 5. Disable non-essential CSS animations on mobile ───
+     The slideLine and scrollPulse CSS animations run at 60fps
+     independently of GSAP. On mobile they add to the animation
+     budget without being critical to the experience. */
+  .panel-line span {
+    animation: none;
+    top: 40px; /* rest at midpoint */
+    opacity: 0.7;
+  }
+
+  /* salary badge pulse — keep but slow down so it’s less frequent */
+  .salary-badge {
+    animation-duration: 5s;
+  }
+
+  /* ── 6. Hero floating lines Lottie — reduce opacity to hide on mobile ─
+     The hero floating lines SVG is scroll-driven via bindLottieToScroll
+     which calls goToAndStop() on every scroll tick — expensive on mobile.
+     CSS hides it so the ScrollTrigger + Lottie overhead is wasted on nothing
+     even if the JS still sets it up. */
+  .hero-floating-lines {
+    display: none !important;
+  }
+
+  /* ── 7. Disable the CSS noise texture on mobile ────────
+     The fixed noise overlay with mix-blend-mode: soft-light forces a
+     full-screen blend composite every frame — expensive during scroll. */
+  .noise {
+    display: none;
+  }
+
+  /* ── 8. Promote preloader tiles to GPU layer during wipe animation ─ */
+  .preloader-tile {
+    will-change: transform;
+  }
+
+  /* ── 9. Simpler service card hover (no border gradient trace on mobile) */
+  .service-card::before {
+    display: none;
+  }
+
+  /* ── 10. Disable the hero cursor spotlight on touch devices ───── */
+  .hero::before {
+    display: none;
+  }
+}

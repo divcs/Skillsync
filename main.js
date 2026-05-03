@@ -140,69 +140,71 @@ function shouldRunLogoLoader() {
 
 function runLogoLoader() {
   const logoLoader = document.getElementById('logo-loader')
-  const logoLottieContainer = document.getElementById('logo-loader-lottie')
+  if (!logoLoader) return Promise.resolve()
 
-  if (!logoLoader || !logoLottieContainer) {
-    console.log('[SkillSync Loader] Logo loader elements not found')
-    return Promise.resolve()
-  }
-
-  if (typeof lottie === 'undefined') {
-    console.log('[SkillSync Loader] Lottie not available, skipping')
-    return Promise.resolve()
-  }
-
-  console.log('[SkillSync Loader] Starting logo Lottie animation')
-  logoLottieContainer.innerHTML = ''
   logoLoader.style.display = 'flex'
-  gsap.set('#logo-loader', { autoAlpha: 1 })
+  gsap.set('#logo-loader', { yPercent: 0 })
+
+  // Set initial hidden states
+  gsap.set('.loader-logo', { opacity: 0, scale: 0.72, filter: 'blur(8px)' })
+  gsap.set('.loader-brand', { opacity: 0, y: 14 })
+  gsap.set('.loader-sub', { opacity: 0, y: 10 })
+  gsap.set('.loader-line', { opacity: 0 })
+  gsap.set('.loader-line span', { x: '-100%' })
 
   return new Promise((resolve) => {
-    let completed = false
-    let fallbackTimer = null
-
-    const finish = () => {
-      if (completed) return
-      completed = true
-      if (fallbackTimer) window.clearTimeout(fallbackTimer)
-
-      gsap.to('#logo-loader', {
-        autoAlpha: 0,
-        duration: 0.6,
-        ease: 'power2.out',
-        onComplete: () => {
-          logoLoader.style.display = 'none'
-          console.log('[SkillSync Loader] Logo loader hidden')
-          resolve()
-        },
-      })
-    }
-
-    const anim = lottie.loadAnimation({
-      container: logoLottieContainer,
-      renderer: 'svg',
-      loop: false,
-      autoplay: true,
-      path: encodeURI(LOGO_LOTTIE_PATH),
-      rendererSettings: {
-        progressiveLoad: true,
-        hideOnTransparent: true,
-        preserveAspectRatio: 'xMidYMid meet',
+    const tl = gsap.timeline({
+      onComplete: () => {
+        logoLoader.style.display = 'none'
+        resolve()
       },
     })
 
-    anim.addEventListener('complete', () => {
-      console.log('[SkillSync Loader] Logo Lottie completed')
-      finish()
-    })
-
-    anim.addEventListener('error', () => {
-      console.log('[SkillSync Loader] Logo Lottie failed to load')
-      finish()
-    })
-
-    // Safety fallback — never block for more than 5s
-    fallbackTimer = window.setTimeout(finish, 5000)
+    tl
+      // 1 — logo reveal
+      .to('.loader-logo', {
+        opacity: 1,
+        scale: 1,
+        filter: 'blur(0px)',
+        duration: 0.9,
+        ease: 'power3.out',
+      })
+      // 2 — brand text
+      .to('.loader-brand', {
+        opacity: 1,
+        y: 0,
+        duration: 0.55,
+        ease: 'power2.out',
+      }, '-=0.45')
+      // 3 — tagline
+      .to('.loader-sub', {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
+        ease: 'power2.out',
+      }, '-=0.3')
+      // 4 — line fade + shimmer sweep
+      .to('.loader-line', { opacity: 1, duration: 0.3 }, '-=0.2')
+      .to('.loader-line span', {
+        x: '220%',
+        duration: 1.1,
+        ease: 'power2.inOut',
+      })
+      // 5 — hold a moment
+      .to({}, { duration: 0.4 })
+      // 6 — content fades up
+      .to('.loader-content', {
+        opacity: 0,
+        y: -18,
+        duration: 0.45,
+        ease: 'power2.in',
+      })
+      // 7 — full panel slides up (matches preloader transition)
+      .to('#logo-loader', {
+        yPercent: -100,
+        duration: 0.85,
+        ease: 'expo.inOut',
+      }, '-=0.1')
   })
 }
 

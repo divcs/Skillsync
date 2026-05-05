@@ -4,8 +4,7 @@ let globalClickListener = null
 
 const stageCards = Array.from(document.querySelectorAll('.stage-card'))
 const revealItems = document.querySelectorAll('[data-reveal]')
-const progressBar = document.querySelector('.progress-bar')
-const progressValue = document.getElementById('progress-value')
+const progressValue = null // removed
 const journeyTitle = document.getElementById('journey-title')
 const journeyKicker = document.getElementById('journey-kicker')
 const journeyDetail = document.getElementById('journey-detail')
@@ -17,7 +16,6 @@ const carouselButtons = document.querySelectorAll('[data-carousel]')
 const faqItems = Array.from(document.querySelectorAll('.faq-item'))
 const contactForm = document.querySelector('.contact-form')
 
-const progressLength = 2 * Math.PI * 88
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)',
 ).matches
@@ -203,23 +201,6 @@ function runLogoLoader() {
 
 trackInternalNavigationClicks()
 
-// SVG gradient for the progress orbit is injected once so the progress circle can glow.
-if (progressBar) {
-  const orbitSvg = document.querySelector('.progress-orbit svg')
-  orbitSvg.insertAdjacentHTML(
-    'afterbegin',
-    `
-      <defs>
-        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#22d3ee"></stop>
-          <stop offset="100%" stop-color="#8b5cf6"></stop>
-        </linearGradient>
-      </defs>
-    `,
-  )
-  progressBar.style.strokeDasharray = `${progressLength}`
-  progressBar.style.strokeDashoffset = `${progressLength * 0.75}`
-}
 
 async function initPreloader() {
   const greetings = [
@@ -736,13 +717,6 @@ function initLottieAccents() {
     })
   }
 
-  // ── Progress pulse (journey section orbit) ──────────────────────
-  // Keep on all devices — it's small and not scroll-driven.
-  accentAnimations.progressPulse = loadLottieAnimation({
-    container: 'progress-pulse-lottie',
-    path: 'assets/animate/pulse loader (1).json',
-    speed: 0.92,
-  })
 
   // ── Job match (services section) ────────────────────────────────
   // Desktop-only (compactViewport already excludes ≤1100px).
@@ -850,7 +824,7 @@ function initJourney() {
 }
 
 function updateJourney(progress) {
-  if (!stageCards.length || !journeyTitle || !journeyKicker || !journeyDetail || !progressValue) {
+  if (!stageCards.length || !journeyTitle || !journeyKicker || !journeyDetail) {
     return
   }
 
@@ -869,7 +843,7 @@ function updateJourney(progress) {
     const p = _lastJourneyProgress
     const stageIndex = Math.min(stageCards.length - 1, Math.floor(p * stageCards.length))
     const activeCard = stageCards[stageIndex]
-    const percent = Math.round(25 + p * 75)
+
 
     document.body.dataset.stage = String(stageIndex)
     stageCards.forEach((card, index) => {
@@ -882,11 +856,6 @@ function updateJourney(progress) {
       journeyDetail.textContent = activeCard.dataset.detail
     }
 
-    if (progressBar) {
-      progressBar.style.strokeDashoffset = `${progressLength * (1 - percent / 100)}`
-    }
-
-    progressValue.textContent = `${percent}%`
 
     if (journeyAnimation && journeyAnimation.totalFrames) {
       const frame = journeyAnimation.totalFrames * p

@@ -697,8 +697,6 @@ button {
 
 .hero-text,
 .contact-copy p,
-.journey-kicker,
-.journey-narrative p,
 .hero-metrics p,
 .service-card p,
 .testimonial-card p,
@@ -718,7 +716,6 @@ button {
 .hero-line-accent,
 .hero-line-lottie,
 .section-accent-line,
-.journey-line-lottie,
 .hero-scanner-lottie,
 .contact-hud,
 .contact-scanner-lottie {
@@ -758,7 +755,6 @@ button {
 .hero-metrics p,
 .panel-tag,
 .path-steps span,
-.journey-label,
 .salary-badge,
 .form-note,
 .footer-shell span {
@@ -1093,10 +1089,6 @@ button {
   100% { opacity: 0; transform: translate(-50%, 52px); }
 }
 
-.journey {
-  padding-top: 140px;
-}
-
 .section-accent-line {
   position: relative;
   width: min(100%, 420px);
@@ -1105,111 +1097,7 @@ button {
   opacity: 0.96;
 }
 
-.journey-line-lottie {
-  width: 100%;
-  height: 100%;
-  filter: hue-rotate(110deg) saturate(1.05);
-}
-
-.journey-track {
-  min-height: 360vh;
-}
-
-.journey-pin {
-  position: relative;
-  width: var(--container);
-  min-height: calc(100vh - 120px);
-  margin: 0 auto;
-  padding: 42px;
-  border-radius: 36px;
-  display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(300px, 1fr) minmax(
-      240px,
-      0.9fr
-    );
-  gap: 28px;
-  align-items: center;
-  overflow: visible; /* allow journey-copy text to breathe; lottie-shell self-clips */
-}
-
-.journey-pin::before,
-.journey-pin::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  background: var(--stage-glow);
-  filter: blur(60px);
-  transition: background 0.4s ease;
-}
-
-.journey-pin::before {
-  width: 300px;
-  height: 300px;
-  top: -80px;
-  right: -60px;
-}
-
-.journey-pin::after {
-  width: 240px;
-  height: 240px;
-  bottom: -40px;
-  left: -80px;
-}
-
-.journey-sidebar,
-.journey-copy,
-.journey-visual {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-}
-
-.journey-label {
-  margin: 0 0 20px;
-  color: rgba(226, 232, 240, 0.74);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.journey-stages {
-  display: grid;
-  gap: 16px;
-}
-
-.stage-card {
-  padding: 18px 20px;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  transition:
-    transform 0.35s ease,
-    border-color 0.35s ease,
-    background 0.35s ease,
-    box-shadow 0.35s ease;
-}
-
-.stage-card.active {
-  transform: translateX(10px);
-  border-color: rgba(139, 92, 246, 0.35);
-  background: linear-gradient(
-    135deg,
-    rgba(124, 58, 237, 0.18),
-    rgba(34, 211, 238, 0.08)
-  );
-  box-shadow: 0 18px 40px rgba(8, 15, 32, 0.32);
-}
-
-.stage-card span {
-  display: inline-block;
-  margin-bottom: 10px;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  color: rgba(226, 232, 240, 0.56);
-}
-
 .stage-card h3,
-.journey-narrative h3,
 .service-card h3,
 .testimonial-card h3,
 .team-card h3 {
@@ -1223,37 +1111,9 @@ button {
 }
 
 .stage-card p,
-.journey-narrative p,
 .testimonial-card small,
 .team-card p {
   margin: 10px 0 0;
-}
-
-.journey-visual {
-  display: flex;
-  justify-content: center;
-}
-
-.lottie-shell {
-  position: relative;
-  width: min(100%, 430px);
-  aspect-ratio: 1 / 1;
-  display: grid;
-  place-items: center;
-  border-radius: 32px;
-  overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(139, 92, 246, 0.14),
-      transparent 55%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.05),
-      rgba(255, 255, 255, 0.02)
-    );
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .lottie-player {
@@ -1263,18 +1123,6 @@ button {
   overflow: hidden;
 }
 
-.journey-glow {
-  position: absolute;
-  inset: 16%;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(124, 58, 237, 0.22),
-    transparent 68%
-  );
-  filter: blur(24px);
-}
-
 .lottie-player {
   position: relative;
   width: min(100%, 420px);
@@ -1282,23 +1130,6 @@ button {
 }
 
 /* progress-orbit / progress-pulse / progress-core fully removed */
-
-.journey-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0; /* prevent grid column overflow */
-}
-
-.journey-narrative h3 {
-  font-size: clamp(2rem, 4vw, 3.6rem);
-  margin-top: 8px;
-}
-
-.journey-kicker {
-  font-size: 1.25rem;
-  color: white;
-}
 
 .services {
   padding-top: 80px;
@@ -2007,7 +1838,7 @@ svg defs {
 :is(
     .hero-ui-lottie,
     .hero-scanner-lottie,
-    .journey-line-lottie,
+  
     .job-match-lottie,
     .form-rocket-lottie
   )
@@ -2105,7 +1936,6 @@ svg defs {
   }
 
   .hero-layout,
-  .journey-pin,
   .contact-shell,
   .faq-grid,
   .service-grid,
@@ -2113,8 +1943,7 @@ svg defs {
     grid-template-columns: 1fr;
   }
 
-  .hero-panel,
-  .journey-copy {
+  .hero-panel {
     max-width: 620px;
   }
 
@@ -2127,15 +1956,6 @@ svg defs {
     width: min(88vw, 760px);
     left: -8%;
     opacity: 0.12;
-  }
-
-  .journey-track {
-    min-height: auto;
-  }
-
-  .journey-pin {
-    width: var(--container);
-    min-height: auto;
   }
 
   .hero-metrics {
@@ -2207,7 +2027,6 @@ svg defs {
   /* ── Carousel shell: tighter padding on mobile so cards have room ──
      Shell had 24px padding → 48px total consumed, leaving the card
      wider than the carousel-window, clipping the right border. */
-  .journey-pin,
   .contact-shell {
     padding: 24px;
   }
@@ -2543,38 +2362,6 @@ svg defs {
 @keyframes btnShimmer {
   to { transform: translateX(220%); }
 }
-
-/* ─────────────────────────────────────────────
-   JOURNEY VISUAL — step-specific glow colors
-───────────────────────────────────────────── */
-body[data-stage='0'] .journey-glow {
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.24), transparent 68%);
-}
-body[data-stage='1'] .journey-glow {
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.28), transparent 68%);
-}
-body[data-stage='2'] .journey-glow {
-  background: radial-gradient(circle, rgba(244, 114, 182, 0.26), transparent 68%);
-}
-body[data-stage='3'] .journey-glow {
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 68%);
-}
-
-/* Stage-specific icon backgrounds */
-.lottie-shell::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  pointer-events: none;
-  transition: border-color 0.4s ease;
-}
-
-body[data-stage='0'] .lottie-shell::after { border-color: rgba(34, 211, 238, 0.18); }
-body[data-stage='1'] .lottie-shell::after { border-color: rgba(34, 211, 238, 0.22); }
-body[data-stage='2'] .lottie-shell::after { border-color: rgba(244, 114, 182, 0.18); }
-body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.25); }
 
 /* ─────────────────────────────────────────────
    FORM FIELD — enhanced focus ring
@@ -3391,7 +3178,6 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
      contain-intrinsic-size prevents layout shift when the section
      enters the viewport. */
   .services,
-  .journey,
   .testimonials,
   .team,
   .faq,

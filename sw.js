@@ -108,7 +108,7 @@ self.addEventListener('activate', (event) => {
         keys
           .filter((key) => !ALL_CACHES.includes(key))
           .map((key) => {
-            console.log('[SW] Deleting stale cache:', key)
+            // console.log('[SW] Deleting stale cache:', key)
             return caches.delete(key)
           })
       )

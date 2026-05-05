@@ -2,12 +2,8 @@ gsap.registerPlugin(ScrollTrigger)
 
 let globalClickListener = null
 
-const stageCards = Array.from(document.querySelectorAll('.stage-card'))
 const revealItems = document.querySelectorAll('[data-reveal]')
 const progressValue = null // removed
-const journeyTitle = document.getElementById('journey-title')
-const journeyKicker = document.getElementById('journey-kicker')
-const journeyDetail = document.getElementById('journey-detail')
 const carouselTrack = document.querySelector('.carousel-track')
 const testimonialCards = Array.from(
   document.querySelectorAll('.testimonial-card'),
@@ -23,9 +19,6 @@ const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matc
 const accentAnimations = {}
 let currentSlide = 0
 let carouselTimer
-let journeyAnimation
-let _journeyRaf = false
-let _lastJourneyProgress = -1
 const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
 const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
 const LOGO_LOTTIE_PATH = 'assets/skillsync.json'
@@ -143,7 +136,7 @@ function shouldRunLogoLoader() {
     safeStorageGet(sessionStorage, LOGO_LOADER_SHOWN_KEY) === '1'
 
   const shouldRun = isHomePage && !refreshVisit && !alreadyShownInSession
-  console.log('[SkillSync Loader] Logo loader check:', { isHomePage, refreshVisit, alreadyShownInSession, shouldRun })
+  // console.log('[SkillSync Loader] Logo loader check:', { isHomePage, refreshVisit, alreadyShownInSession, shouldRun })
   return shouldRun
 }
 
@@ -376,7 +369,6 @@ try { initCursor() } catch(e) { console.warn('initCursor error:', e) }
 try { initHeroParallax() } catch(e) { console.warn('initHeroParallax error:', e) }
 try { initLottieAccents() } catch(e) { console.warn('initLottieAccents error:', e) }
 try { initReveals() } catch(e) { console.warn('initReveals error:', e) }
-try { initJourney() } catch(e) { console.warn('initJourney error:', e) }
 try { initServiceCards() } catch(e) { console.warn('initServiceCards error:', e) }
 try { initMagneticButtons() } catch(e) { console.warn('initMagneticButtons error:', e) }
 try { initCarousel() } catch(e) { console.warn('initCarousel error:', e) }
@@ -753,116 +745,6 @@ function initReveals() {
   })
 }
 
-function initJourney() {
-  const lottieTarget = document.getElementById('journey-lottie')
-
-  if (lottieTarget) {
-    if (isTouchDevice) {
-      // Mobile: load the Lottie, jump to frame 0 and stop immediately.
-      // This renders a crisp static first frame — no scroll-driven seeking,
-      // no rAF overhead, no goToAndStop() calls during scroll.
-      journeyAnimation = loadLottieAnimation({
-        container: lottieTarget,
-        loop: false,
-        autoplay: false,
-        path: 'assets/lottie/1skillsync-fixed.json',
-        preserveAspectRatio: 'xMidYMid slice',
-      })
-      if (journeyAnimation) {
-        const onJourneyLoaded = () => {
-          journeyAnimation.goToAndStop(0, true)
-        }
-        if (journeyAnimation.isLoaded) {
-          onJourneyLoaded()
-        } else {
-          journeyAnimation.addEventListener('DOMLoaded', onJourneyLoaded)
-        }
-      }
-    } else {
-      // Desktop: fully animated, scroll-driven.
-      journeyAnimation = loadLottieAnimation({
-        container: lottieTarget,
-        loop: false,
-        autoplay: false,
-        path: 'assets/lottie/1skillsync-fixed.json',
-        preserveAspectRatio: 'xMidYMid slice',
-      })
-      journeyAnimation.addEventListener('DOMLoaded', () => updateJourney(0))
-    }
-  }
-
-  if (window.innerWidth > 1100) {
-    ScrollTrigger.create({
-      trigger: '.journey-track',
-      start: 'top top+=90',
-      end: 'bottom bottom',
-      pin: '.journey-pin',
-      scrub: true,
-      anticipatePin: 1,
-      onUpdate: ({ progress }) => {
-        updateJourney(progress)
-      },
-    })
-  } else {
-    updateJourney(0)
-    // Mobile: use a larger scrub value so onUpdate fires less frequently
-    ScrollTrigger.create({
-      trigger: '.journey-track',
-      start: 'top 70%',
-      end: 'bottom 30%',
-      scrub: 1.5,
-      onUpdate: ({ progress }) => updateJourney(progress),
-    })
-  }
-
-  stageCards.forEach((card) => {
-    card.addEventListener('click', () => {
-      const stage = Number(card.dataset.stage)
-      updateJourney(stage / (stageCards.length - 1))
-    })
-  })
-}
-
-function updateJourney(progress) {
-  if (!stageCards.length || !journeyTitle || !journeyKicker || !journeyDetail) {
-    return
-  }
-
-  const clamped = gsap.utils.clamp(0, 1, progress)
-
-  // RAF-throttle: skip frame if already queued
-  if (_journeyRaf) {
-    _lastJourneyProgress = clamped
-    return
-  }
-  _journeyRaf = true
-  _lastJourneyProgress = clamped
-
-  requestAnimationFrame(() => {
-    _journeyRaf = false
-    const p = _lastJourneyProgress
-    const stageIndex = Math.min(stageCards.length - 1, Math.floor(p * stageCards.length))
-    const activeCard = stageCards[stageIndex]
-
-
-    document.body.dataset.stage = String(stageIndex)
-    stageCards.forEach((card, index) => {
-      card.classList.toggle('active', index === stageIndex)
-    })
-
-    if (activeCard) {
-      journeyTitle.textContent = activeCard.dataset.title
-      journeyKicker.textContent = activeCard.dataset.kicker
-      journeyDetail.textContent = activeCard.dataset.detail
-    }
-
-
-    if (journeyAnimation && journeyAnimation.totalFrames) {
-      const frame = journeyAnimation.totalFrames * p
-      journeyAnimation.goToAndStop(frame, true)
-    }
-  })
-}
 
 function initServiceCards() {
   const cards = document.querySelectorAll('.tilt-card')

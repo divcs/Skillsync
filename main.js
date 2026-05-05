@@ -26,6 +26,8 @@ const accentAnimations = {}
 let currentSlide = 0
 let carouselTimer
 let journeyAnimation
+let _journeyRaf = false
+let _lastJourneyProgress = -1
 const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
 const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
 const LOGO_LOTTIE_PATH = 'assets/skillsync.json'
@@ -853,34 +855,44 @@ function updateJourney(progress) {
   }
 
   const clamped = gsap.utils.clamp(0, 1, progress)
-  const stageIndex = Math.min(
-    stageCards.length - 1,
-    Math.floor(clamped * stageCards.length),
-  )
-  const activeCard = stageCards[stageIndex]
-  const percent = Math.round(25 + clamped * 75)
 
-  document.body.dataset.stage = String(stageIndex)
-  stageCards.forEach((card, index) => {
-    card.classList.toggle('active', index === stageIndex)
+  // RAF-throttle: skip frame if already queued
+  if (_journeyRaf) {
+    _lastJourneyProgress = clamped
+    return
+  }
+  _journeyRaf = true
+  _lastJourneyProgress = clamped
+
+  requestAnimationFrame(() => {
+    _journeyRaf = false
+    const p = _lastJourneyProgress
+    const stageIndex = Math.min(stageCards.length - 1, Math.floor(p * stageCards.length))
+    const activeCard = stageCards[stageIndex]
+    const percent = Math.round(25 + p * 75)
+
+    document.body.dataset.stage = String(stageIndex)
+    stageCards.forEach((card, index) => {
+      card.classList.toggle('active', index === stageIndex)
+    })
+
+    if (activeCard) {
+      journeyTitle.textContent = activeCard.dataset.title
+      journeyKicker.textContent = activeCard.dataset.kicker
+      journeyDetail.textContent = activeCard.dataset.detail
+    }
+
+    if (progressBar) {
+      progressBar.style.strokeDashoffset = `${progressLength * (1 - percent / 100)}`
+    }
+
+    progressValue.textContent = `${percent}%`
+
+    if (journeyAnimation && journeyAnimation.totalFrames) {
+      const frame = journeyAnimation.totalFrames * p
+      journeyAnimation.goToAndStop(frame, true)
+    }
   })
-
-  if (activeCard) {
-    journeyTitle.textContent = activeCard.dataset.title
-    journeyKicker.textContent = activeCard.dataset.kicker
-    journeyDetail.textContent = activeCard.dataset.detail
-  }
-
-  if (progressBar) {
-    progressBar.style.strokeDashoffset = `${progressLength * (1 - percent / 100)}`
-  }
-
-  progressValue.textContent = `${percent}%`
-
-  if (journeyAnimation && journeyAnimation.totalFrames) {
-    const frame = journeyAnimation.totalFrames * clamped
-    journeyAnimation.goToAndStop(frame, true)
-  }
 }
 
 function initServiceCards() {

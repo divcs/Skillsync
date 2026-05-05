@@ -2561,11 +2561,23 @@ svg defs {
   height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
+  object-position: center 18%;
   display: block;
   transition: transform 0.5s ease;
 }
 
 .blog-article-hero-img:hover img { transform: scale(1.02); }
+
+.blog-hero h1.is-typing::after {
+  content: '|';
+  margin-left: 6px;
+  color: rgba(226, 232, 240, 0.85);
+  animation: blogCaretBlink 0.85s step-end infinite;
+}
+
+@keyframes blogCaretBlink {
+  50% { opacity: 0; }
+}
 
 .blog-article-body {
   font-size: 1.02rem;

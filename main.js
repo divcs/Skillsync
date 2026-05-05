@@ -240,7 +240,8 @@ async function initPreloader() {
   // Vertical strips spanning full screen height, hidden during greeting,
   // then slide UP staggered after greeting completes
   const NUM_COLS = window.innerWidth <= 768 ? 6 : 10
-  const tilesContainer = document.createElement('div')
+  const tilesContainer =
+    document.getElementById('preloader-tiles') || document.createElement('div')
   tilesContainer.id = 'preloader-tiles'
   tilesContainer.className = 'preloader-tiles'
   tilesContainer.style.cssText = `
@@ -248,14 +249,17 @@ async function initPreloader() {
     flex-direction:row;z-index:10001;visibility:hidden;
     pointer-events:none;overflow:hidden;
   `
+  tilesContainer.innerHTML = ''
   for (let i = 0; i < NUM_COLS; i++) {
     const tile = document.createElement('div')
     tile.className = 'preloader-tile'
     // Soft violet-white: maximum dramatic contrast when dark hero is revealed
-    tile.style.cssText = `flex:1;height:100%;background:#f0ebff;`
+    tile.style.cssText = 'flex:1;height:100%;background:#f0ebff;'
     tilesContainer.appendChild(tile)
   }
-  preloader.appendChild(tilesContainer)
+  if (!tilesContainer.parentElement) {
+    preloader.appendChild(tilesContainer)
+  }
 
   // Force solid bg directly — bypasses any CSS caching
   preloader.style.background = 'radial-gradient(ellipse at 50% 40%, #0d1340 0%, #020617 65%)'
@@ -401,6 +405,9 @@ function initTeamAvatars() {
 try { initTeamAvatars() } catch (e) { console.warn('initTeamAvatars error:', e) }
 
 function initLenis() {
+  // Prevent CSS smooth-scroll from fighting Lenis.
+  document.documentElement.style.scrollBehavior = 'auto'
+
   // Disable Lenis smooth scroll on touch/mobile devices.
   // Native momentum scrolling is far more performant on mobile and
   // Lenis's JS-driven lerp is the primary source of scroll jank.
@@ -411,7 +418,7 @@ function initLenis() {
   }
 
   const lenis = new Lenis({
-    lerp: 0.08,
+    lerp: 0.1,
     smoothWheel: true,
   })
 
@@ -1242,6 +1249,9 @@ function initTextReveal() {
   ]
 
   headings.forEach((el) => {
+    // Blog hero title has its own typing effect.
+    if (el.matches('.blog-hero h1')) return
+
     // Skip if already processed by another function
     if (el.dataset.revealDone) return
     el.dataset.revealDone = '1'
@@ -1303,6 +1313,45 @@ function initTextReveal() {
   })
 }
 try { initTextReveal() } catch (e) { console.warn('initTextReveal:', e) }
+
+function initBlogTitleTyping() {
+  const titleEl = document.querySelector('.blog-hero h1[data-scramble]')
+  if (!titleEl) return
+  if (prefersReducedMotion) return
+
+  let typingTimer
+  const typeTitle = () => {
+    const targetText =
+      (titleEl.dataset.typingText || titleEl.textContent || '').trim()
+    if (!targetText) return
+
+    clearTimeout(typingTimer)
+    titleEl.classList.remove('is-typing')
+    titleEl.textContent = ''
+
+    const chars = Array.from(targetText)
+    const step = isTouchDevice ? 55 : 40
+    let index = 0
+    titleEl.classList.add('is-typing')
+
+    const tick = () => {
+      titleEl.textContent = chars.slice(0, index + 1).join('')
+      index += 1
+      if (index < chars.length) {
+        typingTimer = window.setTimeout(tick, step)
+      } else {
+        titleEl.classList.remove('is-typing')
+      }
+    }
+    tick()
+  }
+
+  // First render.
+  typeTitle()
+  // Re-run when blog content is swapped by query param links.
+  window.addEventListener('blog-title-updated', typeTitle)
+}
+try { initBlogTitleTyping() } catch (e) { console.warn('initBlogTitleTyping:', e) }
 
 // ── Gradient Border Mouse Tracking (service cards) ────
 function initGradientBorder() {
@@ -1367,6 +1416,7 @@ function initParticles() {
     canvas.height = displayH * PIXEL_RATIO
     canvas.style.width = displayW + 'px'
     canvas.style.height = displayH + 'px'
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
     if (PIXEL_RATIO !== 1) ctx.scale(PIXEL_RATIO, PIXEL_RATIO)
     W = displayW
     H = displayH

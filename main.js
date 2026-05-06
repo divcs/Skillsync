@@ -746,6 +746,13 @@ function initLottieAccents() {
 }
 
 function initReveals() {
+  if (prefersReducedMotion || isTouchDevice) {
+    revealItems.forEach((item) => {
+      item.classList.add('is-visible')
+    })
+    return
+  }
+
   revealItems.forEach((item) => {
     gsap.to(item, {
       opacity: 1,
@@ -1140,16 +1147,34 @@ if (typeof ScrollToPlugin !== 'undefined') {
 function initScrollProgress() {
   const bar = document.getElementById('scroll-progress')
   if (!bar) return
-  gsap.to(bar, {
-    scaleX: 1,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: document.documentElement,
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: 0.25,
-    },
-  })
+
+  const mountProgress = () => {
+    gsap.to(bar, {
+      scaleX: 1,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: document.documentElement,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.25,
+      },
+    })
+  }
+
+  if (preloaderWillRun()) {
+    gsap.set(bar, { autoAlpha: 0 })
+    window.addEventListener(
+      'preloader-done',
+      () => {
+        mountProgress()
+        gsap.to(bar, { autoAlpha: 1, duration: 0.2, overwrite: true })
+      },
+      { once: true },
+    )
+    return
+  }
+
+  mountProgress()
 }
 
 // ── Navbar Scroll Glassmorphism ───────────────────────

@@ -104,7 +104,7 @@
             interviews with proof, presence, and positioning.
           </p>
           <div class="hero-actions">
-            <a class="button cursor-hover magnetic" href="#services">Start Your Journey</a>
+            <a class="button cursor-hover magnetic" href="#journey">Start Your Journey</a>
             <a class="button button-secondary cursor-hover magnetic" href="#proof">See Success Stories</a>
           </div>
           <div class="hero-metrics">
@@ -141,10 +141,70 @@
         </aside>
       </div>
 
-      <a class="scroll-indicator cursor-hover" href="#services" aria-label="Scroll to services section">
+      <a class="scroll-indicator cursor-hover" href="#journey" aria-label="Scroll to journey section">
         <span>Scroll to transform your career</span>
         <i></i>
       </a>
+    </section>
+
+    <section id="journey" class="journey section">
+      <div class="container section-intro" data-reveal>
+        <p class="eyebrow">Scroll-Based Storytelling</p>
+        <h2 data-scramble>A guided transformation built for ambitious students targeting the USA</h2>
+      </div>
+
+      <div class="journey-track">
+        <div class="journey-pin glass-panel">
+          <div class="journey-sidebar">
+            <p class="journey-label">Career Journey</p>
+            <div class="journey-stages">
+              <article class="stage-card active" data-stage="0" data-title="Clarity Sprint" data-kicker="Know where you fit."
+                data-detail="We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel precise instead of overwhelming.">
+                <span>01</span>
+                <h3>Clarity Sprint</h3>
+                <p>Decode direction, role-fit, and the USA hiring landscape.</p>
+              </article>
+              <article class="stage-card" data-stage="1" data-title="Skill Acceleration" data-kicker="Build employable proof."
+                data-detail="We identify missing capabilities, stack practical projects, and sharpen high-signal skills that recruiters actually scan for.">
+                <span>02</span>
+                <h3>Skill Acceleration</h3>
+                <p>Turn academic potential into demonstrable workplace value.</p>
+              </article>
+              <article class="stage-card" data-stage="2" data-title="Career Positioning" data-kicker="Become impossible to ignore."
+                data-detail="Resume, LinkedIn, portfolio, and story all align around one thing: making you memorable to the right employer in the right market.">
+                <span>03</span>
+                <h3>Career Positioning</h3>
+                <p>Frame your experience around outcomes, not just effort.</p>
+              </article>
+              <article class="stage-card" data-stage="3" data-title="Placement Success" data-kicker="Show up job-ready."
+                data-detail="Interview prep, job matching, recruiter communication, and closing confidence help you move from shortlisted to selected.">
+                <span>04</span>
+                <h3>Placement Success</h3>
+                <p>Convert preparation into interviews, offers, and momentum.</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="journey-visual">
+            <div class="lottie-shell">
+              <div class="journey-glow"></div>
+              <div id="journey-lottie" class="lottie-player" aria-label="Career journey animation"></div>
+            </div>
+          </div>
+
+          <div class="journey-copy">
+            <div class="journey-narrative">
+              <p class="eyebrow">Active Stage</p>
+              <h3 id="journey-title">Clarity Sprint</h3>
+              <p class="journey-kicker" id="journey-kicker">Know where you fit.</p>
+              <p id="journey-detail">
+                We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel
+                precise instead of overwhelming.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="services" class="services section">
@@ -506,14 +566,15 @@
         </div>
         <div class="blog-grid">
           <article class="blog-card" data-reveal>
-            <div class="blog-card-thumb">
+            <a class="blog-card-thumb cursor-hover" href="blog.html?post=resume" aria-label="Read resume article">
               <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=450&fit=crop"
                 alt="Resume writing" loading="lazy" decoding="async">
               <div class="blog-card-thumb-overlay"></div>
-            </div>
+            </a>
             <div class="blog-card-body">
               <span class="blog-tag">Resume</span>
-              <h2>5 Resume Mistakes That Are Costing You USA Job Interviews</h2>
+              <h2><a class="cursor-hover" href="blog.html?post=resume">5 Resume Mistakes That Are Costing You USA Job
+                  Interviews</a></h2>
               <p>Most resumes fail in the first 6 seconds. Here's what US recruiters actually look for.</p>
               <div class="blog-card-meta">
                 <span>May 2, 2026 · 6 min read</span>
@@ -525,14 +586,15 @@
             </div>
           </article>
           <article class="blog-card" data-reveal>
-            <div class="blog-card-thumb">
+            <a class="blog-card-thumb cursor-hover" href="blog.html?post=interview" aria-label="Read interview article">
               <img src="https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=800&h=450&fit=crop"
                 alt="Interview prep" loading="lazy" decoding="async">
               <div class="blog-card-thumb-overlay"></div>
-            </div>
+            </a>
             <div class="blog-card-body">
               <span class="blog-tag">Interview</span>
-              <h2>How to Crack Your First USA Tech Interview: A Complete Guide</h2>
+              <h2><a class="cursor-hover" href="blog.html?post=interview">How to Crack Your First USA Tech Interview: A
+                  Complete Guide</a></h2>
               <p>The structured framework our students use to walk into interviews calm, sharp, and ready.</p>
               <div class="blog-card-meta">
                 <span>Apr 28, 2026 · 9 min read</span>
@@ -544,14 +606,16 @@
             </div>
           </article>
           <article class="blog-card" data-reveal>
-            <div class="blog-card-thumb">
+            <a class="blog-card-thumb cursor-hover" href="blog.html?post=negotiation"
+              aria-label="Read negotiation article">
               <img src="https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=800&h=450&fit=crop"
                 alt="Salary negotiation" loading="lazy" decoding="async">
               <div class="blog-card-thumb-overlay"></div>
-            </div>
+            </a>
             <div class="blog-card-body">
               <span class="blog-tag">Negotiation</span>
-              <h2>Salary Negotiation: How to Counter Your First US Job Offer</h2>
+              <h2><a class="cursor-hover" href="blog.html?post=negotiation">Salary Negotiation: How to Counter Your
+                  First US Job Offer</a></h2>
               <p>The exact language and timing to negotiate $8–15K higher without risking the offer.</p>
               <div class="blog-card-meta">
                 <span>Mar 30, 2026 · 7 min read</span>

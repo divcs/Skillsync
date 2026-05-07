@@ -3470,6 +3470,24 @@ body.is-loading #scroll-progress {
   color: var(--cyan);
 }
 
+/* Premium kinetic typography lens effect */
+.lens-typography {
+  position: relative;
+  display: inline-block;
+  transform-style: preserve-3d;
+}
+
+.lens-typography .lt-char {
+  display: inline-block;
+  transform-origin: center bottom;
+  will-change: transform, filter, opacity;
+  transition: text-shadow 0.22s ease;
+}
+
+.lens-typography .lt-char.is-hot {
+  text-shadow: 0 10px 24px rgba(139, 92, 246, 0.32);
+}
+
 .blog-card-body p {
   color: var(--muted);
   font-size: 0.92rem;

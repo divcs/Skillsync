@@ -85,6 +85,7 @@ const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)',
 ).matches
 const isTouchDevice = window.matchMedia('(hover: none), (pointer: coarse)').matches
+const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
 const accentAnimations = {}
 let currentSlide = 0
 let carouselTimer
@@ -825,14 +826,13 @@ function initLottieAccents() {
 
 
   // ── Job match (services section) ────────────────────────────────
-  // Desktop-only (compactViewport already excludes ≤1100px).
-  if (!compactViewport) {
-    accentAnimations.jobMatch = loadLottieAnimation({
-      container: 'job-match-lottie',
-      path: 'assets/lottie-files/search-for-employee/animations/12345.json',
-      speed: 0.92,
-    })
-  }
+  // Load across viewports so it is consistently visible.
+  accentAnimations.jobMatch = loadLottieAnimation({
+    container: 'job-match-lottie',
+    path: 'assets/lottie-files/search-for-employee/animations/12345.json',
+    assetsPath: './',
+    speed: 0.92,
+  })
 
   // ── Form rocket (contact section) ───────────────────────────────
   accentAnimations.formRocket = loadLottieAnimation({
@@ -1797,6 +1797,196 @@ function initBlogTitleTyping() {
   window.addEventListener('blog-title-updated', typeTitle)
 }
 try { initBlogTitleTyping() } catch (e) { console.warn('initBlogTitleTyping:', e) }
+
+// ── Premium Lens Typography Hover (Apple dock-like magnification) ───────────
+function initLensTypography(selector, userOptions = {}) {
+  if (!hasFinePointer || prefersReducedMotion) return
+
+  const options = {
+    radius: 140,      // effect reach around cursor
+    intensity: 0.68,  // max scale boost
+    lift: 16,         // max upward lift in px
+    inertia: 0.16,    // cursor smoothing
+    ...userOptions,
+  }
+
+  const targets = Array.from(document.querySelectorAll(selector)).filter(
+    (el) => !el.dataset.lensReady,
+  )
+  if (!targets.length) return
+
+  const instances = []
+
+  const splitToChars = (el) => {
+    const source = el.textContent || ''
+    if (!source.trim()) return []
+
+    const frag = document.createDocumentFragment()
+    const chars = []
+    for (const ch of source) {
+      if (ch === '\n') {
+        frag.appendChild(document.createElement('br'))
+        continue
+      }
+      const span = document.createElement('span')
+      span.className = 'lt-char'
+      span.textContent = ch === ' ' ? '\u00A0' : ch
+      if (ch === ' ') span.dataset.space = '1'
+      frag.appendChild(span)
+      chars.push(span)
+    }
+
+    el.innerHTML = ''
+    el.classList.add('lens-typography')
+    el.appendChild(frag)
+    return chars
+  }
+
+  targets.forEach((el) => {
+    const chars = splitToChars(el)
+    if (!chars.length) return
+
+    el.dataset.lensReady = '1'
+    const obj = {
+      el,
+      chars,
+      active: false,
+      pointerTargetX: 0,
+      pointerCurrentX: 0,
+      centers: [],
+      baseY: 0,
+      setters: chars.map((char) => ({
+        transform: gsap.quickSetter(char, 'transform'),
+        filter: gsap.quickSetter(char, 'filter'),
+        opacity: gsap.quickSetter(char, 'opacity'),
+      })),
+    }
+
+    const recalcCenters = () => {
+      obj.centers = obj.chars.map((char) => {
+        const r = char.getBoundingClientRect()
+        return r.left + r.width / 2
+      })
+    }
+
+    const onEnter = () => {
+      obj.active = true
+      recalcCenters()
+      obj.pointerCurrentX = obj.pointerTargetX
+      startLoop()
+    }
+    const onMove = (event) => {
+      obj.pointerTargetX = event.clientX
+      startLoop()
+    }
+    const onLeave = () => {
+      obj.active = false
+      obj.chars.forEach((char) => char.classList.remove('is-hot'))
+      startLoop()
+    }
+
+    el.addEventListener('mouseenter', onEnter)
+    el.addEventListener('mousemove', onMove, { passive: true })
+    el.addEventListener('mouseleave', onLeave)
+    window.addEventListener('resize', recalcCenters, { passive: true })
+
+    instances.push(obj)
+  })
+
+  if (!instances.length) return
+
+  let rafId = 0
+  const startLoop = () => {
+    if (!rafId) rafId = requestAnimationFrame(tick)
+  }
+  const gaussian = (distance, radius) =>
+    Math.exp(-((distance * distance) / (2 * radius * radius)))
+
+  const tick = () => {
+    let hasMotion = false
+    instances.forEach((inst) => {
+      // Smooth cursor inertia for cinematic movement.
+      inst.pointerCurrentX +=
+        (inst.pointerTargetX - inst.pointerCurrentX) * options.inertia
+      if (inst.active || Math.abs(inst.pointerTargetX - inst.pointerCurrentX) > 0.2) {
+        hasMotion = true
+      }
+
+      inst.chars.forEach((char, idx) => {
+        if (char.dataset.space === '1') return
+
+        const center = inst.centers[idx] || 0
+        const dist = Math.abs(inst.pointerCurrentX - center)
+        const influence = inst.active ? gaussian(dist, options.radius) : 0
+        const scale = 1 + influence * options.intensity
+        const lift = influence * options.lift
+        const bright = 1 + influence * 0.2
+        const opacity = 0.82 + influence * 0.18
+
+        inst.setters[idx].transform(`translate3d(0, ${-lift}px, 0) scale(${scale})`)
+        inst.setters[idx].filter(`brightness(${bright})`)
+        inst.setters[idx].opacity(opacity)
+        char.classList.toggle('is-hot', influence > 0.44)
+      })
+    })
+    if (hasMotion) {
+      rafId = requestAnimationFrame(tick)
+    } else {
+      rafId = 0
+    }
+  }
+  startLoop()
+}
+
+function initPremiumHeadingLens() {
+  initLensTypography('.blog-card-body h2 a', {
+    radius: 118,
+    intensity: 0.52,
+    lift: 10,
+    inertia: 0.18,
+  })
+
+  const initHeroLens = () => {
+    initLensTypography('.hero-copy h1', {
+      radius: 150,
+      intensity: 0.62,
+      lift: 14,
+      inertia: 0.14,
+    })
+  }
+  initHeroLens()
+
+  // Hero heading DOM is rebuilt during entrance animation.
+  // Rebind lens effect after preloader sequence completes.
+  window.addEventListener(
+    'preloader-done',
+    () => {
+      window.setTimeout(initHeroLens, 900)
+    },
+    { once: true },
+  )
+
+  const initBlogHeroLens = () => {
+    initLensTypography('.blog-hero h1', {
+      radius: 140,
+      intensity: 0.5,
+      lift: 10,
+      inertia: 0.16,
+    })
+  }
+  initBlogHeroLens()
+  window.addEventListener('blog-title-updated', () => {
+    window.setTimeout(initBlogHeroLens, 0)
+  })
+
+  initLensTypography('.blog-article-body h2, .blog-article-body h3', {
+    radius: 122,
+    intensity: 0.45,
+    lift: 8,
+    inertia: 0.18,
+  })
+}
+try { initPremiumHeadingLens() } catch (e) { console.warn('initPremiumHeadingLens:', e) }
 
 // ── Gradient Border Mouse Tracking (service cards) ────
 function initGradientBorder() {

@@ -18,14 +18,14 @@
 <body class="is-loading">
     <!-- LOGO LOADER -->
     <div id="logo-loader" role="status" aria-label="Loading SkillSync">
-      <div class="loader-bg-glow"></div>
-      <div class="loader-content">
-        <div class="loader-orbit"></div>
-        <div id="logo-loader-lottie" class="loader-lottie-wrap"></div>
-        <p class="loader-brand">SKILLSYNC</p>
-        <p class="loader-sub">USA Career Transformation</p>
-        <div class="loader-line"><span></span></div>
-      </div>
+        <div class="loader-bg-glow"></div>
+        <div class="loader-content">
+            <div class="loader-orbit"></div>
+            <div id="logo-loader-lottie" class="loader-lottie-wrap"></div>
+            <p class="loader-brand">SKILLSYNC</p>
+            <p class="loader-sub">USA Career Transformation</p>
+            <div class="loader-line"><span></span></div>
+        </div>
     </div>
 
     <!-- PRELOADER -->
@@ -146,16 +146,16 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js"></script>
-    <script src="main.js"></script>
+    <script src="main.js?v=20260507d"></script>
 
     <!-- Service Worker Registration -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .catch((err) => console.warn('[SkillSync SW] Registration failed:', err))
-        })
-      }
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .catch((err) => console.warn('[SkillSync SW] Registration failed:', err))
+            })
+        }
     </script>
 </body>
 

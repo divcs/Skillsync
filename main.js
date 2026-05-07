@@ -1,97 +1,7 @@
 gsap.registerPlugin(ScrollTrigger)
 
 // Global helper: whether the page contains a hero section
-const HAS_HERO = Boolean(document.querySelector('.hero'))
-
-// Filter noisy GSAP "target not found" warnings that persist despite guards.
-// Keeps other warnings intact.
-(function suppressGsapEmptyTargetWarnings(){
-  try {
-    const _origWarn = console.warn.bind(console)
-    console.warn = function(...args) {
-      try {
-        const first = args[0] && String(args[0])
-        if (first && first.indexOf('GSAP target') !== -1 && first.indexOf('not found') !== -1) {
-          return
-        }
-      } catch (e) {}
-      _origWarn(...args)
-    }
-  } catch (e) {
-    // ignore
-  }
-})()
-
-// Safety wrapper: skip gsap.to() calls when their target selector/element list is empty.
-// This prevents "GSAP target ... not found" warnings on pages that don't include certain sections.
-;(function installSafeGsapTo() {
-  try {
-    const _origTo = gsap.to.bind(gsap)
-    gsap.to = function (target, vars) {
-      try {
-        if (typeof target === 'string') {
-          const s = target.trim()
-          if (!s) return null
-          try {
-            if (!document.querySelector(s)) return null
-          } catch (e) {
-            console.warn('Skipping gsap.to for invalid selector:', s)
-            console.trace()
-            return null
-          }
-        } else if (NodeList.prototype.isPrototypeOf(target) || Array.isArray(target)) {
-          if (target.length === 0) return null
-        } else if (!target) {
-          console.warn('Skipping gsap.to for empty target:', target)
-          console.trace()
-          return null
-        }
-      } catch (e) {
-        console.warn('Skipping gsap.to due to error while checking target:', e)
-        console.trace()
-        return null
-      }
-      return _origTo(target, vars)
-    }
-  } catch (e) {
-    /* ignore - if gsap isn't available yet, let code run normally */
-  }
-})()
-
-// Safety wrapper for ScrollTrigger.create: skip creating triggers when the
-// provided `trigger` resolves to no elements. This prevents "Element not found"
-// and related "GSAP target  not found" warnings.
-;(function installSafeScrollTriggerCreate() {
-  try {
-    if (typeof ScrollTrigger === 'undefined' || !ScrollTrigger.create) return
-    const _origCreate = ScrollTrigger.create.bind(ScrollTrigger)
-    ScrollTrigger.create = function (cfg = {}) {
-      try {
-        const trig = cfg.trigger
-        if (!trig) return null
-        if (typeof trig === 'string') {
-          // If selector string doesn't match anything, skip
-          try {
-            if (!document.querySelector(trig)) return null
-          } catch (e) {
-            return null
-          }
-        } else if (NodeList.prototype.isPrototypeOf(trig) || Array.isArray(trig)) {
-          if (trig.length === 0) return null
-        } else if (trig instanceof Element) {
-          // OK
-        } else if (typeof trig === 'object' && trig !== null && trig.trigger) {
-          // defensive: nested cfg
-        }
-      } catch (e) {
-        return null
-      }
-      return _origCreate(cfg)
-    }
-  } catch (e) {
-    /* ignore */
-  }
-})()
+const HAS_HERO = document.querySelector('.hero') !== null
 
 let globalClickListener = null
 
@@ -974,7 +884,7 @@ function initReveals() {
 function initJourney() {
   const hasJourneyUi =
     stageCards.length > 0 &&
-    Boolean(journeyTitle && journeyKicker && journeyDetail)
+    !!(journeyTitle && journeyKicker && journeyDetail)
 
   if (!hasJourneyUi) return
 
@@ -1253,7 +1163,7 @@ function initForm() {
     if (!countryCode) return
     const field = countryCode.closest('.field')
     if (!field) return
-    field.classList.toggle('has-value', Boolean(String(countryCode.value || '').trim()))
+    field.classList.toggle('has-value', String(countryCode.value || '').trim().length > 0)
   }
 
   if (countryCode) {
@@ -1612,7 +1522,7 @@ function initHeroWordReveal() {
   const metrics = heroCopy.querySelector('.hero-metrics')
 
   // Staggered entrance: eyebrow → h1 → paragraph → CTA → metrics
-  const els = [eyebrow, h1, text, cta, metrics].filter(Boolean)
+  const els = [eyebrow, h1, text, cta, metrics].filter((value) => !!value)
   gsap.fromTo(
     els,
     { opacity: 0, y: 28 },
@@ -1796,7 +1706,7 @@ function initTextReveal() {
   const headings = document.querySelectorAll('h2:not(.blog-article h2, .blog-article h3, .blog-article h4, .blog-article h5, .blog-article h6)')
 
   headings.forEach((el) => {
-    if (el.closest('.blog-hero, .blog-article')) return
+      if (el.closest('.blog-hero, .blog-article, .blog-card-body')) return
 
     // Skip if already processed by another function
     if (el.dataset.revealDone) return
@@ -1806,7 +1716,7 @@ function initTextReveal() {
     if (!raw) return
 
     // Split each word into overflow:hidden wrapper
-    const words = raw.split(/\s+/).filter(Boolean)
+    const words = raw.split(/\s+/).filter((value) => !!value)
     el.innerHTML = words
       .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
       .join(' ')
@@ -1861,8 +1771,14 @@ function initTextReveal() {
 try { initTextReveal() } catch (e) { console.warn('initTextReveal:', e) }
 
 // ── Premium Lens Typography Hover (Apple dock-like magnification) ───────────
+function getNormalizedElementText(el) {
+  const clone = el.cloneNode(true)
+  clone.querySelectorAll('br').forEach((br) => br.replaceWith(' '))
+  return clone.textContent.replace(/\s+/g, ' ').trim()
+}
+
 function initLensTypography(selector, userOptions = {}) {
-  if (!hasFinePointer || prefersReducedMotion) return
+  if (prefersReducedMotion) return
 
 const options = {
   radius: 58,
@@ -1873,19 +1789,33 @@ const options = {
 }
 
 
-  const targets = Array.from(document.querySelectorAll(selector)).filter(
-    (el) => !el.dataset.lensReady,
-  )
+  const matchedTargets = Array.from(document.querySelectorAll(selector))
+  matchedTargets.forEach((el) => {
+    const hasChars = !!el.querySelector('.lt-char')
+    const hasNestedChars = !!el.querySelector('.lt-char .lt-char')
+    if (el.dataset.lensReady && (!hasChars || hasNestedChars)) {
+      if (typeof el.__lensTypographyCleanup === 'function') {
+        el.__lensTypographyCleanup()
+      }
+      delete el.dataset.lensReady
+      delete el.__lensTypographyCleanup
+      el.classList.remove('lens-typography')
+    }
+  })
+
+  const targets = matchedTargets.filter((el) => !el.dataset.lensReady)
   if (!targets.length) return
 
   const instances = []
 
  const splitToChars = (el) => {
-  const source = el.innerText.trim()
+  const source = getNormalizedElementText(el)
 
   if (!source) return []
 
   const words = source.split(' ')
+
+  //--------- not touched by codex
 
   const frag = document.createDocumentFragment()
 
@@ -1913,15 +1843,19 @@ const options = {
     frag.appendChild(wordWrap)
 
     if (wordIndex < words.length - 1) {
+     
+
+  //--------- added by codex
       const space =
         document.createElement('span')
 
       space.className = 'lens-space'
 
-      space.innerHTML = '&nbsp;'
+    space.textContent = '\u00a0'
 
       frag.appendChild(space)
     }
+  // -----not touched by codex 
   })
 
   el.innerHTML = ''
@@ -1947,11 +1881,27 @@ pointerTargetY: 0,
 
 pointerCurrentX: 0,
 pointerCurrentY: 0,
-      centers: [],
+
+// ----- removed by codex
+    //   centers: [],
+    //   baseY: 0,
+    //   setters: chars.map((char) => ({
+    //     transform: gsap.quickSetter(char, 'transform'),
+    //     filter: gsap.quickSetter(char, 'filter'),
+    //     opacity: gsap.quickSetter(char, 'opacity'),
+    //   })),
+    // }
+
+
+  //  ---- added by codex
+
+  centers: [],
       baseY: 0,
       setters: chars.map((char) => ({
-        transform: gsap.quickSetter(char, 'transform'),
-        filter: gsap.quickSetter(char, 'filter'),
+        y: gsap.quickSetter(char, 'y', 'px'),
+        rotation: gsap.quickSetter(char, 'rotation', 'deg'),
+        scaleX: gsap.quickSetter(char, 'scaleX'),
+        scaleY: gsap.quickSetter(char, 'scaleY'),
         opacity: gsap.quickSetter(char, 'opacity'),
       })),
     }
@@ -1963,22 +1913,48 @@ const recalcCenters = () => {
     return {
       x: r.left + r.width / 2,
       y: r.top + r.height / 2,
+
+      // ------ removed by codex
+//     }
+//   })
+// }
+
+//     const onEnter = () => {
+//       obj.active = true
+//       recalcCenters()
+//       obj.pointerCurrentX = obj.pointerTargetX
+//       startLoop()
+
+
     }
-  })
+    // ------ removed by codex
+//  const onMove = (event) => {
+ })
 }
 
-    const onEnter = () => {
+    const onEnter = (event) => {
       obj.active = true
       recalcCenters()
-      obj.pointerCurrentX = obj.pointerTargetX
+      obj.pointerTargetX = event.clientX
+      obj.pointerTargetY = event.clientY
+      obj.pointerCurrentX = event.clientX
+      obj.pointerCurrentY = event.clientY
       startLoop()
     }
  const onMove = (event) => {
+  
   obj.pointerTargetX = event.clientX
   obj.pointerTargetY = event.clientY
 
   startLoop()
-}
+
+  // ----- removed by codex
+// }
+//     const onLeave = () => {
+//       obj.active = false
+//       obj.chars.forEach((char) => char.classList.remove('is-hot'))
+//       startLoop()
+ }
     const onLeave = () => {
       obj.active = false
       obj.chars.forEach((char) => char.classList.remove('is-hot'))
@@ -1986,9 +1962,26 @@ const recalcCenters = () => {
     }
 
     el.addEventListener('mouseenter', onEnter)
-    el.addEventListener('mousemove', onMove, { passive: true })
+
+    // ---- removed by codex
+  //   el.addEventListener('mousemove', onMove, { passive: true })
+  //   el.addEventListener('mouseleave', onLeave)
+  //   window.addEventListener('resize', recalcCenters, { passive: true })
+
+  //   instances.push(obj)
+  // })
+
+  // ----- added by codex
+   el.addEventListener('mousemove', onMove, { passive: true })
     el.addEventListener('mouseleave', onLeave)
     window.addEventListener('resize', recalcCenters, { passive: true })
+
+    el.__lensTypographyCleanup = () => {
+      el.removeEventListener('mouseenter', onEnter)
+      el.removeEventListener('mousemove', onMove)
+      el.removeEventListener('mouseleave', onLeave)
+      window.removeEventListener('resize', recalcCenters)
+    }
 
     instances.push(obj)
   })
@@ -2002,29 +1995,51 @@ const recalcCenters = () => {
   const gaussian = (distance, radius) =>
     Math.exp(-((distance * distance) / (2 * radius * radius)))
 
-  const tick = () => {
+  // ----- removed by codex
+
+  // const tick = () => {
+  //   let hasMotion = false
+  //   instances.forEach((inst) => {
+  //     // Smooth cursor inertia for cinematic movement.
+  //     inst.pointerCurrentX +=
+  //       (inst.pointerTargetX - inst.pointerCurrentX) * options.inertia
+  //     if (inst.active || Math.abs(inst.pointerTargetX - inst.pointerCurrentX) > 0.2) {
+  //       hasMotion = true
+  //     }
+const tick = () => {
     let hasMotion = false
     instances.forEach((inst) => {
       // Smooth cursor inertia for cinematic movement.
+      const deltaX = inst.pointerTargetX - inst.pointerCurrentX
+      const deltaY = inst.pointerTargetY - inst.pointerCurrentY
       inst.pointerCurrentX +=
-        (inst.pointerTargetX - inst.pointerCurrentX) * options.inertia
-      if (inst.active || Math.abs(inst.pointerTargetX - inst.pointerCurrentX) > 0.2) {
+        deltaX * options.inertia
+      inst.pointerCurrentY +=
+        deltaY * options.inertia
+      if (inst.active || Math.abs(deltaX) > 0.2 || Math.abs(deltaY) > 0.2) {
         hasMotion = true
       }
-
       inst.chars.forEach((char, idx) => {
         if (char.dataset.space === '1') return
 
 const center = inst.centers[idx]
 
-if (!center) return
+// ------ removed by codex
+// if (!center) return
 
-inst.pointerCurrentY +=
-  (inst.pointerTargetY - inst.pointerCurrentY) *
-  options.inertia
+// inst.pointerCurrentY +=
+//   (inst.pointerTargetY - inst.pointerCurrentY) *
+//   options.inertia
+
+// const dx =
+//   inst.pointerCurrentX - center.x
+
+// ---- added by codex
+if (!center) return
 
 const dx =
   inst.pointerCurrentX - center.x
+//  added till here
 
 const dy =
   inst.pointerCurrentY - center.y
@@ -2037,8 +2052,19 @@ const influence =
     ? gaussian(dist, options.radius)
     : 0
 
-if (influence < 0.015) {
-  inst.setters[idx].transform('')
+    // removed by codex
+// if (influence < 0.015) {
+//   inst.setters[idx].transform('')
+//   inst.setters[idx].opacity(0.76)
+
+// removed by codex
+  // char.classList.remove('is-hot')
+
+  if (influence < 0.015) {
+  inst.setters[idx].y(0)
+  inst.setters[idx].rotation(0)
+  inst.setters[idx].scaleX(1)
+  inst.setters[idx].scaleY(1)
   inst.setters[idx].opacity(0.76)
 
   char.classList.remove('is-hot')
@@ -2054,17 +2080,31 @@ const lift =
 
 const rotate = influence * 0.35
 
+// removed by codex 
+
+// const opacity =
+//   0.76 + influence * 0.24
+
+// inst.setters[idx].transform(`
+//   translate3d(0, ${-lift}px, 0)
+//   rotateZ(${rotate}deg)
+//   scale3d(${scale}, ${scale}, 1)
+// `)
+
+// inst.setters[idx].opacity(opacity)
+
+// added by codex
+
 const opacity =
   0.76 + influence * 0.24
 
-inst.setters[idx].transform(`
-  translate3d(0, ${-lift}px, 0)
-  rotateZ(${rotate}deg)
-  scale3d(${scale}, ${scale}, 1)
-`)
-
+inst.setters[idx].y(-lift)
+inst.setters[idx].rotation(rotate)
+inst.setters[idx].scaleX(scale)
+inst.setters[idx].scaleY(scale)
 inst.setters[idx].opacity(opacity)
 
+//  added till here
 char.classList.toggle(
   'is-hot',
   influence > 0.44
@@ -2079,12 +2119,19 @@ char.classList.toggle(
   }
   startLoop()
 }
-//Blog cards
+// Blog cards + hero heading lens
 function initPremiumHeadingLens() {
-  // Only enable the hero lens on pages that contain a hero.
-  if (!HAS_HERO) return
+  if (hasFinePointer && !prefersReducedMotion) {
+    initLensTypography('.blog-card-body h2 a', {
+      radius: 52,
+      intensity: 0.038,
+      lift: 0.8,
+      inertia: 0.08,
+    })
+  }
 
   const initHeroLens = () => {
+    if (!HAS_HERO) return
     initLensTypography('.hero-copy h1', {
       radius: 54,
       intensity: 0.035,
@@ -2092,13 +2139,45 @@ function initPremiumHeadingLens() {
       inertia: 0.07,
     })
   }
-  initHeroLens()
 
-  // Hero heading DOM is rebuilt during entrance animation.
-  // Rebind lens effect after preloader sequence completes.
-  window.addEventListener('preloader-done', () => {
-    window.setTimeout(initHeroLens, 900)
-  }, { once: true })
+  const initBlogLens = () => {
+    initLensTypography('.blog-hero h1, .blog-article h2, .blog-article h3', {
+      radius: 50,
+      intensity: 0.035,
+      lift: 0.6,
+      inertia: 0.08,
+    })
+  }
+
+  initBlogLens()
+
+  if (preloaderWillRun()) {
+    window.addEventListener('preloader-done', () => {
+      window.setTimeout(initHeroLens, 900)
+    }, { once: true })
+  } else {
+    initHeroLens()
+  }
+
+  const blogHeroTitle = document.querySelector('.blog-hero h1')
+  if (blogHeroTitle) {
+    const syncBlogHeroLens = () => {
+      if (blogHeroTitle.querySelector('.lt-char')) return
+      initBlogLens()
+    }
+
+    const observer = new MutationObserver(() => {
+      window.requestAnimationFrame(syncBlogHeroLens)
+    })
+
+    observer.observe(blogHeroTitle, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    })
+
+    window.addEventListener('beforeunload', () => observer.disconnect(), { once: true })
+  }
 }
 try { initPremiumHeadingLens() } catch (e) { console.warn('initPremiumHeadingLens:', e) }
 
@@ -2269,7 +2348,7 @@ function initHeroEntranceSequence() {
   const heroMetrics = document.querySelectorAll('.hero-metrics div')
 
   // Hide ALL hero children initially — h1 included
-  const elementsToHide = [eyebrow, h1, heroText, heroActions, ...Array.from(heroMetrics)].filter(Boolean)
+  const elementsToHide = [eyebrow, h1, heroText, heroActions, ...Array.from(heroMetrics)].filter((value) => !!value)
   gsap.set(elementsToHide, { opacity: 0 })
 
   function runEntrance() {
@@ -2290,9 +2369,9 @@ function initHeroEntranceSequence() {
     // restore container to opacity:1 first so word-inners are visible
     if (h1) {
       tl.set(h1, { opacity: 1 }, 0.15)
-      const raw = h1.textContent.trim()
+      const raw = getNormalizedElementText(h1)
       if (raw) {
-        h1.innerHTML = raw.split(/\s+/).filter(Boolean)
+        h1.innerHTML = raw.split(/\s+/).filter((value) => !!value)
           .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
           .join(' ')
       }
@@ -2308,7 +2387,7 @@ function initHeroEntranceSequence() {
     // Paragraph text — starts with h1 (no delay), word curtain
     if (heroText) {
       tl.set(heroText, { opacity: 1 }, 0.20) // reveal container (was opacity:0 from elementsToHide)
-      const words = heroText.textContent.split(/\s+/).filter(Boolean)
+      const words = heroText.textContent.split(/\s+/).filter((value) => !!value)
       heroText.innerHTML = words
         .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
         .join(' ')

@@ -10,7 +10,7 @@
  *   Fonts (Google)      → Cache-first with 365-day TTL
  */
 
-const CACHE_VERSION = 'v1.5'
+const CACHE_VERSION = 'v1.6'
 const STATIC_CACHE  = `skillsync-static-${CACHE_VERSION}`
 const LOTTIE_CACHE  = `skillsync-lottie-${CACHE_VERSION}`
 const CDN_CACHE     = `skillsync-cdn-${CACHE_VERSION}`

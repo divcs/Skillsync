@@ -3510,8 +3510,6 @@ body.is-loading #scroll-progress {
 
   transform-origin: center bottom;
 
-  translate: 0 0;
-
   contain: layout paint style;
 
   backface-visibility: hidden;

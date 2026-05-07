@@ -85,8 +85,9 @@ body.is-loading {
     rgba(34, 211, 238, 0.14) 38%,
     transparent 68%
   );
-  filter: blur(54px);
-  animation: loaderGlowPulse 3.5s ease-in-out infinite;
+  filter: blur(46px);
+  opacity: 0.55;
+  animation: loaderGlowPulse 6.5s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -101,12 +102,13 @@ body.is-loading {
     rgba(34, 211, 238, 0.18),
     transparent 60%
   );
-  animation: loaderGlowPulse 4.2s ease-in-out infinite reverse;
+  opacity: 0.55;
+  animation: loaderGlowPulse 7.5s ease-in-out infinite reverse;
 }
 
 @keyframes loaderGlowPulse {
-  0%, 100% { transform: scale(1);    opacity: 0.75; }
-  50%       { transform: scale(1.14); opacity: 1;    }
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50% { transform: scale(1.08); opacity: 0.72; }
 }
 
 /* ── Decorative corner accents ── */
@@ -565,7 +567,7 @@ button {
 
 .nav-shell {
   width: fit-content;
-  min-width: 85%;
+  min-width: 0;
   max-width: min(940px, calc(100vw - 96px));
   margin-inline: auto;
   display: flex;
@@ -716,7 +718,7 @@ button {
 
 .hero-copy h1 {
   font-size: clamp(3.8rem, 7vw, 5.8rem);
-  max-width: 10ch;
+  max-width: 14ch;
   /* margin-bottom via shorthand below — font styles in the selector above */
   margin: 0 0 clamp(1.1rem, 2.1vw, 1.8rem);
   font-family: 'Syne', sans-serif;
@@ -2005,7 +2007,7 @@ body[data-stage='3'] .journey-glow {
   gap: 34px;
   padding: 42px;
   border-radius: 34px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .contact-hud {
@@ -2211,7 +2213,7 @@ body[data-stage='3'] .journey-glow {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
-  z-index: 30;
+  z-index: 2000;
   border-radius: 14px;
   border: 1px solid rgba(139, 92, 246, 0.35);
   background: rgba(8, 14, 30, 0.98);
@@ -2492,6 +2494,9 @@ svg defs {
   }
 
   .nav-shell {
+    width: calc(100% - 28px);
+    max-width: none;
+    margin-inline: 14px;
     padding: 12px 14px;
   }
 
@@ -2505,7 +2510,7 @@ svg defs {
 
   .hero {
     min-height: 100svh;
-    padding-top: 140px;
+    padding-top: 164px;
     margin-top: 0;
     padding-bottom: 120px;
   }
@@ -2515,11 +2520,16 @@ svg defs {
   }
 
   .hero-copy h1 {
-    font-size: clamp(2.6rem, 10vw, 4rem);
-    max-width: none;
+    font-size: clamp(2.35rem, 8.4vw, 3.35rem);
+    max-width: 12ch;
     overflow-wrap: break-word;
     word-break: break-word;
     margin-bottom: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  .hero-video {
+    object-position: 62% center;
+    transform: scale(1.04);
   }
 
   .hero-panel-visual,
@@ -3398,6 +3408,8 @@ body.is-loading #scroll-progress {
 }
 
 .blog-card-thumb {
+  display: block;
+  width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   position: relative;

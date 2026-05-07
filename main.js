@@ -925,7 +925,10 @@ function updateJourney(progress) {
   requestAnimationFrame(() => {
     _journeyRaf = false
     const p = _lastJourneyProgress
-    const stageIndex = Math.min(stageCards.length - 1, Math.floor(p * stageCards.length))
+    const stageIndex = Math.min(
+      stageCards.length - 1,
+      Math.round(p * (stageCards.length - 1)),
+    )
     const activeCard = stageCards[stageIndex]
 
     document.body.dataset.stage = String(stageIndex)
@@ -1186,6 +1189,12 @@ function initForm() {
         menu.hidden = false
       })
 
+      // Mobile/touch: open menu on tap reliably
+      countryCode.addEventListener('pointerdown', () => {
+        renderCountryCodeMenu(countryCode.value)
+        menu.hidden = false
+      })
+
       countryCode.addEventListener('input', () => {
         renderCountryCodeMenu(countryCode.value)
         menu.hidden = false
@@ -1198,6 +1207,15 @@ function initForm() {
       document.addEventListener('click', (event) => {
         if (!fieldCode.contains(event.target)) menu.hidden = true
       })
+
+      // Prevent touch scroll from being treated as outside click
+      menu.addEventListener(
+        'pointerdown',
+        (e) => {
+          e.stopPropagation()
+        },
+        { passive: true },
+      )
     }
 
     syncSelectLabel()
@@ -1266,7 +1284,8 @@ function initForm() {
       const digits = String(ph.value || '').replace(/\D/g, '')
       const dialCode = parseCountryDialCode()
       if (dialCode === '+91') {
-        if (digits.length !== 10 || !/^[6-9]\d{9}$/.test(digits)) {
+        const normalized = digits.length > 10 && digits.startsWith('91') ? digits.slice(2) : digits
+        if (normalized.length !== 10 || !/^[6-9]\d{9}$/.test(normalized)) {
           setFieldError(ph, 'For India, enter a valid 10-digit mobile number (starts with 6-9).')
           ok = false
         }
@@ -1299,8 +1318,11 @@ function initForm() {
     phone.setAttribute('inputmode', 'numeric')
     phone.addEventListener('input', () => {
       const current = String(phone.value || '')
-      const digitsOnly = current.replace(/\D/g, '')
+      let digitsOnly = current.replace(/\D/g, '')
       const dialCode = parseCountryDialCode()
+      if (dialCode === '+91' && digitsOnly.length > 10 && digitsOnly.startsWith('91')) {
+        digitsOnly = digitsOnly.slice(2)
+      }
       const limited = dialCode === '+91' ? digitsOnly.slice(0, 10) : digitsOnly.slice(0, 15)
       if (current !== limited) {
         phone.value = limited

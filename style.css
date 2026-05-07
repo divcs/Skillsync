@@ -713,18 +713,27 @@ button {
 
 .hero-copy {
   max-width: 520px;
-  text-shadow: 0 18px 46px rgba(2, 6, 23, 0.62);
+  text-shadow: none;
 }
 
 .hero-copy h1 {
+  display: inline-block;
+
   font-size: clamp(3.8rem, 7vw, 5.8rem);
-  max-width: 14ch;
-  /* margin-bottom via shorthand below — font styles in the selector above */
+
+  max-width: 12ch;
+
   margin: 0 0 clamp(1.1rem, 2.1vw, 1.8rem);
+
   font-family: 'Syne', sans-serif;
+
   font-weight: 700;
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+
+  line-height: 1.06;
+
+  letter-spacing: -0.015em;
+
+  text-wrap: balance;
 }
 
 /* Hero copy: subtle backdrop so video stays visible */
@@ -3016,21 +3025,23 @@ body.is-loading #scroll-progress {
 }
 
 .blog-hero h1 {
-  font-size: clamp(2.4rem, 5.5vw, 4rem);
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 12px 0 22px;
-  display: inline-block;
-  transform-origin: left center;
-  transition: transform 0.28s ease, text-shadow 0.28s ease;
-  will-change: transform;
-}
+  font-size: clamp(2.4rem, 5vw, 4rem);
 
-.blog-hero h1:hover {
-  transform: scale(1.04);
-  text-shadow: 0 18px 44px rgba(124, 58, 237, 0.34);
+  font-family: 'Syne', sans-serif;
+
+  font-weight: 700;
+
+  letter-spacing: -0.018em;
+
+  line-height: 1.14;
+
+  margin: 12px 0 22px;
+
+  display: inline-block;
+
+  max-width: 16ch;
+
+  text-wrap: balance;
 }
 
 .blog-hero p {
@@ -3471,21 +3482,48 @@ body.is-loading #scroll-progress {
 }
 
 /* Premium kinetic typography lens effect */
+/* Premium Lens Typography */
 .lens-typography {
   position: relative;
+  display: inline;
+  line-height: 1.12;
+}
+
+.lens-word {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.lens-space {
   display: inline-block;
-  transform-style: preserve-3d;
+  width: 0.32em;
 }
 
 .lens-typography .lt-char {
-  display: inline-block;
+  position: relative;
+
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  margin-inline: 0.008em;
+
   transform-origin: center bottom;
-  will-change: transform, filter, opacity;
-  transition: text-shadow 0.22s ease;
+
+  translate: 0 0;
+
+  contain: layout paint style;
+
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+
+  transition:
+    opacity 160ms ease,
+    color 160ms ease;
 }
 
 .lens-typography .lt-char.is-hot {
-  text-shadow: 0 10px 24px rgba(139, 92, 246, 0.32);
+  color: rgba(255,255,255,.98);
 }
 
 .blog-card-body p {
@@ -3623,13 +3661,6 @@ body.is-loading #scroll-progress {
     letter-spacing: 0.1em;
     font-size: 0.65rem;
   }
-
-  /* Blog hero h1 */
-  .blog-hero h1 {
-    font-size: clamp(2.4rem, 10vw, 4rem);
-    word-break: break-word;
-  }
-
   /* Loader brand text */
   .loader-brand {
     font-size: 1.05rem;
@@ -3794,11 +3825,6 @@ body.is-loading #scroll-progress {
      full-screen blend composite every frame — expensive during scroll. */
   .noise {
     display: none;
-  }
-
-  /* ── 8. Promote preloader tiles to GPU layer during wipe animation ─ */
-  .preloader-tile {
-    will-change: transform;
   }
 
   /* ── 9. Simpler service card hover (no border gradient trace on mobile) */

@@ -1,5 +1,98 @@
 gsap.registerPlugin(ScrollTrigger)
 
+// Global helper: whether the page contains a hero section
+const HAS_HERO = Boolean(document.querySelector('.hero'))
+
+// Filter noisy GSAP "target not found" warnings that persist despite guards.
+// Keeps other warnings intact.
+(function suppressGsapEmptyTargetWarnings(){
+  try {
+    const _origWarn = console.warn.bind(console)
+    console.warn = function(...args) {
+      try {
+        const first = args[0] && String(args[0])
+        if (first && first.indexOf('GSAP target') !== -1 && first.indexOf('not found') !== -1) {
+          return
+        }
+      } catch (e) {}
+      _origWarn(...args)
+    }
+  } catch (e) {
+    // ignore
+  }
+})()
+
+// Safety wrapper: skip gsap.to() calls when their target selector/element list is empty.
+// This prevents "GSAP target ... not found" warnings on pages that don't include certain sections.
+;(function installSafeGsapTo() {
+  try {
+    const _origTo = gsap.to.bind(gsap)
+    gsap.to = function (target, vars) {
+      try {
+        if (typeof target === 'string') {
+          const s = target.trim()
+          if (!s) return null
+          try {
+            if (!document.querySelector(s)) return null
+          } catch (e) {
+            console.warn('Skipping gsap.to for invalid selector:', s)
+            console.trace()
+            return null
+          }
+        } else if (NodeList.prototype.isPrototypeOf(target) || Array.isArray(target)) {
+          if (target.length === 0) return null
+        } else if (!target) {
+          console.warn('Skipping gsap.to for empty target:', target)
+          console.trace()
+          return null
+        }
+      } catch (e) {
+        console.warn('Skipping gsap.to due to error while checking target:', e)
+        console.trace()
+        return null
+      }
+      return _origTo(target, vars)
+    }
+  } catch (e) {
+    /* ignore - if gsap isn't available yet, let code run normally */
+  }
+})()
+
+// Safety wrapper for ScrollTrigger.create: skip creating triggers when the
+// provided `trigger` resolves to no elements. This prevents "Element not found"
+// and related "GSAP target  not found" warnings.
+;(function installSafeScrollTriggerCreate() {
+  try {
+    if (typeof ScrollTrigger === 'undefined' || !ScrollTrigger.create) return
+    const _origCreate = ScrollTrigger.create.bind(ScrollTrigger)
+    ScrollTrigger.create = function (cfg = {}) {
+      try {
+        const trig = cfg.trigger
+        if (!trig) return null
+        if (typeof trig === 'string') {
+          // If selector string doesn't match anything, skip
+          try {
+            if (!document.querySelector(trig)) return null
+          } catch (e) {
+            return null
+          }
+        } else if (NodeList.prototype.isPrototypeOf(trig) || Array.isArray(trig)) {
+          if (trig.length === 0) return null
+        } else if (trig instanceof Element) {
+          // OK
+        } else if (typeof trig === 'object' && trig !== null && trig.trigger) {
+          // defensive: nested cfg
+        }
+      } catch (e) {
+        return null
+      }
+      return _origCreate(cfg)
+    }
+  } catch (e) {
+    /* ignore */
+  }
+})()
+
 let globalClickListener = null
 
 const stageCards = Array.from(document.querySelectorAll('.stage-card'))
@@ -586,6 +679,7 @@ function initCursor() {
 }
 
 function initHeroParallax() {
+  if (!HAS_HERO) return
   // Mouse-tracking parallax is desktop-only — on mobile there is no mouse
   // and firing gsap.to() inside touchmove events is a major jank source.
   if (!isTouchDevice) {
@@ -619,69 +713,77 @@ function initHeroParallax() {
 
   // Ambient glow drifts — keep on mobile but only if not reduced motion
   if (!prefersReducedMotion) {
-    gsap.to('.sky-glow-a', {
-      xPercent: 8,
-      yPercent: 6,
-      duration: isTouchDevice ? 18 : 12,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
+    if (document.querySelector('.sky-glow-a')) {
+      gsap.to('.sky-glow-a', {
+        xPercent: 8,
+        yPercent: 6,
+        duration: isTouchDevice ? 18 : 12,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      })
+    }
 
-    gsap.to('.sky-glow-b', {
-      xPercent: -10,
-      yPercent: 10,
-      duration: isTouchDevice ? 20 : 14,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
+    if (document.querySelector('.sky-glow-b')) {
+      gsap.to('.sky-glow-b', {
+        xPercent: -10,
+        yPercent: 10,
+        duration: isTouchDevice ? 20 : 14,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      })
+    }
 
-    gsap.to('.orb-c', {
-      scale: 1.5,
-      opacity: 0.45,
-      duration: 2.6,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    })
+    if (document.querySelector('.orb-c')) {
+      gsap.to('.orb-c', {
+        scale: 1.5,
+        opacity: 0.45,
+        duration: 2.6,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      })
+    }
   }
 
-  // Scroll-based mountain parallax — use scrub:1 on mobile for less frequent updates
+  // Scroll-based mountain parallax — only initialize when a .hero exists
   const scrubVal = isTouchDevice ? 1.5 : true
+  const heroEl = document.querySelector('.hero')
+  if (heroEl) {
+    gsap.to('.hero .mountain-back', {
+      yPercent: -10,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: scrubVal,
+      },
+    })
 
-  gsap.to('.hero .mountain-back', {
-    yPercent: -10,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.hero',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: scrubVal,
-    },
-  })
+    gsap.to('.hero .mountain-mid', {
+      yPercent: -16,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: scrubVal,
+      },
+    })
 
-  gsap.to('.hero .mountain-mid', {
-    yPercent: -16,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.hero',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: scrubVal,
-    },
-  })
-
-  gsap.to('.hero .mountain-front', {
-    yPercent: -24,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.hero',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: scrubVal,
-    },
-  })
+    gsap.to('.hero .mountain-front', {
+      yPercent: -24,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: scrubVal,
+      },
+    })
+  }
 }
 
 function loadLottieAnimation({
@@ -773,10 +875,13 @@ function bindLottieToScroll(
 function initLottieAccents() {
   const compactViewport = window.matchMedia('(max-width: 1100px)').matches
 
+  if (!HAS_HERO) return
+
   // ── Hero floating lines ─────────────────────────────────────────
   // On mobile: skipped entirely (CSS hides the container too).
   // On desktop: scroll-driven SVG animation.
-  if (!isTouchDevice) {
+  const heroEl = document.querySelector('.hero')
+  if (heroEl && !isTouchDevice) {
     accentAnimations.heroFloatingLines = loadLottieAnimation({
       container: 'hero-floating-lines',
       path: 'assets/lottie-files/Floating Lines.json',
@@ -1691,6 +1796,8 @@ function initTextReveal() {
   const headings = document.querySelectorAll('h2:not(.blog-article h2, .blog-article h3, .blog-article h4, .blog-article h5, .blog-article h6)')
 
   headings.forEach((el) => {
+    if (el.closest('.blog-hero, .blog-article')) return
+
     // Skip if already processed by another function
     if (el.dataset.revealDone) return
     el.dataset.revealDone = '1'
@@ -1753,60 +1860,18 @@ function initTextReveal() {
 }
 try { initTextReveal() } catch (e) { console.warn('initTextReveal:', e) }
 
-/* typing effect commented
-function initBlogTitleTyping() {
-  const titleEl = document.querySelector('.blog-hero h1[data-scramble]')
-  if (!titleEl) return
-  if (prefersReducedMotion) return
-
-  let typingTimer
-  const typeTitle = () => {
-    const targetText =
-      (titleEl.dataset.typingText || titleEl.textContent || '').trim()
-    if (!targetText) return
-
-    clearTimeout(typingTimer)
-    titleEl.classList.remove('is-typing')
-    titleEl.textContent = ''
-
-    const chars = Array.from(targetText)
-    const step = isTouchDevice ? 55 : 40
-    let index = 0
-    titleEl.classList.add('is-typing')
-
-    const tick = () => {
-      titleEl.textContent = chars.slice(0, index + 1).join('')
-      index += 1
-      if (index < chars.length) {
-        typingTimer = window.setTimeout(tick, step)
-      } else {
-        titleEl.classList.remove('is-typing')
-      }
-    }
-    tick()
-  }
-
-  // First render.
-  typeTitle()
-  // Re-run when blog content is swapped by query param links.
-  window.addEventListener('blog-title-updated', typeTitle)
-}
-
-*/
-// Blog title typing animation removed - headings are now static
-// try { initBlogTitleTyping() } catch (e) { console.warn('initBlogTitleTyping:', e) }
-
 // ── Premium Lens Typography Hover (Apple dock-like magnification) ───────────
 function initLensTypography(selector, userOptions = {}) {
   if (!hasFinePointer || prefersReducedMotion) return
 
-  const options = {
-    radius: 140,      // effect reach around cursor
-    intensity: 0.68,  // max scale boost
-    lift: 16,         // max upward lift in px
-    inertia: 0.16,    // cursor smoothing
-    ...userOptions,
-  }
+const options = {
+  radius: 58,
+  intensity: 0.04,
+  lift: 0.9,
+  inertia: 0.08,
+  ...userOptions,
+}
+
 
   const targets = Array.from(document.querySelectorAll(selector)).filter(
     (el) => !el.dataset.lensReady,
@@ -1815,30 +1880,58 @@ function initLensTypography(selector, userOptions = {}) {
 
   const instances = []
 
-  const splitToChars = (el) => {
-    const source = el.textContent || ''
-    if (!source.trim()) return []
+ const splitToChars = (el) => {
+  const source = el.innerText.trim()
 
-    const frag = document.createDocumentFragment()
-    const chars = []
-    for (const ch of source) {
-      if (ch === '\n') {
-        frag.appendChild(document.createElement('br'))
-        continue
-      }
-      const span = document.createElement('span')
+  if (!source) return []
+
+  const words = source.split(' ')
+
+  const frag = document.createDocumentFragment()
+
+  const chars = []
+
+  words.forEach((word, wordIndex) => {
+    const wordWrap =
+      document.createElement('span')
+
+    wordWrap.className = 'lens-word'
+
+    ;[...word].forEach((ch) => {
+      const span =
+        document.createElement('span')
+
       span.className = 'lt-char'
-      span.textContent = ch === ' ' ? '\u00A0' : ch
-      if (ch === ' ') span.dataset.space = '1'
-      frag.appendChild(span)
-      chars.push(span)
-    }
 
-    el.innerHTML = ''
-    el.classList.add('lens-typography')
-    el.appendChild(frag)
-    return chars
-  }
+      span.textContent = ch
+
+      wordWrap.appendChild(span)
+
+      chars.push(span)
+    })
+
+    frag.appendChild(wordWrap)
+
+    if (wordIndex < words.length - 1) {
+      const space =
+        document.createElement('span')
+
+      space.className = 'lens-space'
+
+      space.innerHTML = '&nbsp;'
+
+      frag.appendChild(space)
+    }
+  })
+
+  el.innerHTML = ''
+
+  el.classList.add('lens-typography')
+
+  el.appendChild(frag)
+
+  return chars
+}
 
   targets.forEach((el) => {
     const chars = splitToChars(el)
@@ -1849,8 +1942,11 @@ function initLensTypography(selector, userOptions = {}) {
       el,
       chars,
       active: false,
-      pointerTargetX: 0,
-      pointerCurrentX: 0,
+pointerTargetX: 0,
+pointerTargetY: 0,
+
+pointerCurrentX: 0,
+pointerCurrentY: 0,
       centers: [],
       baseY: 0,
       setters: chars.map((char) => ({
@@ -1860,12 +1956,16 @@ function initLensTypography(selector, userOptions = {}) {
       })),
     }
 
-    const recalcCenters = () => {
-      obj.centers = obj.chars.map((char) => {
-        const r = char.getBoundingClientRect()
-        return r.left + r.width / 2
-      })
+const recalcCenters = () => {
+  obj.centers = obj.chars.map((char) => {
+    const r = char.getBoundingClientRect()
+
+    return {
+      x: r.left + r.width / 2,
+      y: r.top + r.height / 2,
     }
+  })
+}
 
     const onEnter = () => {
       obj.active = true
@@ -1873,10 +1973,12 @@ function initLensTypography(selector, userOptions = {}) {
       obj.pointerCurrentX = obj.pointerTargetX
       startLoop()
     }
-    const onMove = (event) => {
-      obj.pointerTargetX = event.clientX
-      startLoop()
-    }
+ const onMove = (event) => {
+  obj.pointerTargetX = event.clientX
+  obj.pointerTargetY = event.clientY
+
+  startLoop()
+}
     const onLeave = () => {
       obj.active = false
       obj.chars.forEach((char) => char.classList.remove('is-hot'))
@@ -1913,18 +2015,60 @@ function initLensTypography(selector, userOptions = {}) {
       inst.chars.forEach((char, idx) => {
         if (char.dataset.space === '1') return
 
-        const center = inst.centers[idx] || 0
-        const dist = Math.abs(inst.pointerCurrentX - center)
-        const influence = inst.active ? gaussian(dist, options.radius) : 0
-        const scale = 1 + influence * options.intensity
-        const lift = influence * options.lift
-        const bright = 1 + influence * 0.2
-        const opacity = 0.82 + influence * 0.18
+const center = inst.centers[idx]
 
-        inst.setters[idx].transform(`translate3d(0, ${-lift}px, 0) scale(${scale})`)
-        inst.setters[idx].filter(`brightness(${bright})`)
-        inst.setters[idx].opacity(opacity)
-        char.classList.toggle('is-hot', influence > 0.44)
+if (!center) return
+
+inst.pointerCurrentY +=
+  (inst.pointerTargetY - inst.pointerCurrentY) *
+  options.inertia
+
+const dx =
+  inst.pointerCurrentX - center.x
+
+const dy =
+  inst.pointerCurrentY - center.y
+
+const dist =
+  Math.sqrt(dx * dx + dy * dy)
+
+const influence =
+  inst.active
+    ? gaussian(dist, options.radius)
+    : 0
+
+if (influence < 0.015) {
+  inst.setters[idx].transform('')
+  inst.setters[idx].opacity(0.76)
+
+  char.classList.remove('is-hot')
+
+  return
+}
+
+const scale =
+  1 + influence * options.intensity
+
+const lift =
+  influence * options.lift
+
+const rotate = influence * 0.35
+
+const opacity =
+  0.76 + influence * 0.24
+
+inst.setters[idx].transform(`
+  translate3d(0, ${-lift}px, 0)
+  rotateZ(${rotate}deg)
+  scale3d(${scale}, ${scale}, 1)
+`)
+
+inst.setters[idx].opacity(opacity)
+
+char.classList.toggle(
+  'is-hot',
+  influence > 0.44
+)
       })
     })
     if (hasMotion) {
@@ -1935,54 +2079,26 @@ function initLensTypography(selector, userOptions = {}) {
   }
   startLoop()
 }
-
+//Blog cards
 function initPremiumHeadingLens() {
-  initLensTypography('.blog-card-body h2 a', {
-    radius: 118,
-    intensity: 0.52,
-    lift: 10,
-    inertia: 0.18,
-  })
+  // Only enable the hero lens on pages that contain a hero.
+  if (!HAS_HERO) return
 
   const initHeroLens = () => {
     initLensTypography('.hero-copy h1', {
-      radius: 150,
-      intensity: 0.62,
-      lift: 14,
-      inertia: 0.14,
+      radius: 54,
+      intensity: 0.035,
+      lift: 0.7,
+      inertia: 0.07,
     })
   }
   initHeroLens()
 
   // Hero heading DOM is rebuilt during entrance animation.
   // Rebind lens effect after preloader sequence completes.
-  window.addEventListener(
-    'preloader-done',
-    () => {
-      window.setTimeout(initHeroLens, 900)
-    },
-    { once: true },
-  )
-
-  const initBlogHeroLens = () => {
-    initLensTypography('.blog-hero h1', {
-      radius: 140,
-      intensity: 0.5,
-      lift: 10,
-      inertia: 0.16,
-    })
-  }
-  initBlogHeroLens()
-  window.addEventListener('blog-title-updated', () => {
-    window.setTimeout(initBlogHeroLens, 0)
-  })
-
-  initLensTypography('.blog-article-body h2, .blog-article-body h3', {
-    radius: 122,
-    intensity: 0.45,
-    lift: 8,
-    inertia: 0.18,
-  })
+  window.addEventListener('preloader-done', () => {
+    window.setTimeout(initHeroLens, 900)
+  }, { once: true })
 }
 try { initPremiumHeadingLens() } catch (e) { console.warn('initPremiumHeadingLens:', e) }
 

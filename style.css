@@ -197,13 +197,11 @@ body.is-loading {
 
 /* ── Lottie icon wrap — mask vignette ── */
 .loader-lottie-wrap {
-  width: clamp(165px, 21vw, 230px);
-  height: clamp(165px, 21vw, 230px);
+  width: clamp(230px, 28vw, 360px);
+  height: clamp(190px, 24vw, 320px);
   flex-shrink: 0;
   position: relative;
   z-index: 1;
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, black 44%, transparent 72%);
-  mask-image: radial-gradient(circle at 50% 50%, black 44%, transparent 72%);
   margin-bottom: 2px;
 }
 
@@ -566,18 +564,26 @@ button {
   gap: 24px;
   padding: 14px 18px;
   border-radius: 999px;
-  background: rgba(8, 15, 32, 0.52);
+  background: rgba(8, 15, 32, 0.34);
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: relative;
+  transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
 }
 
 .brand {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 3px 0;
 }
 
 .brand img {
-  width: 160px;
+  display: block;
+  width: 172px;
+  height: auto;
+  object-fit: contain;
   opacity: 0.96;
 }
 
@@ -669,8 +675,13 @@ button {
 .hero {
   min-height: 100svh;
   padding-top: 140px;
+  margin-top: 0;
   display: flex;
   align-items: center;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: #020617;
 }
 
 
@@ -679,9 +690,14 @@ button {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 48px;
+  gap: 32px;
+}
+
+.hero-copy {
+  max-width: 920px;
+  text-shadow: 0 18px 46px rgba(2, 6, 23, 0.62);
 }
 
 .hero-copy h1 {
@@ -711,6 +727,7 @@ button {
   max-width: 620px;
   margin: 28px 0 0;
   font-size: clamp(1rem, 2vw, 1.15rem);
+  color: rgba(248, 250, 252, 0.86);
 }
 
 .hero-line-accent,
@@ -740,8 +757,10 @@ button {
 .hero-metrics div {
   padding: 18px 20px;
   border-radius: 22px;
-  background: rgba(15, 23, 42, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(2, 6, 23, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .hero-metrics span {
@@ -850,6 +869,24 @@ button {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  z-index: 0;
+}
+
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-video-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(2, 6, 23, 0.78) 0%, rgba(2, 6, 23, 0.42) 46%, rgba(2, 6, 23, 0.2) 100%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.28) 0%, rgba(2, 6, 23, 0.08) 42%, rgba(2, 6, 23, 0.64) 100%);
+  pointer-events: none;
 }
 
 .sky-glow,
@@ -1606,7 +1643,10 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
 /* Ensure main content isn't hidden under fixed header on larger screens */
 @media (min-width: 900px) {
   main { padding-top: 100px; }
-  .hero { padding-top: 160px; }
+  .site-header + main > .hero:first-child {
+    padding-top: 260px;
+    margin-top: -100px;
+  }
 }
 
 .avatar-initials {
@@ -1824,6 +1864,16 @@ body[data-stage='3'] .lottie-shell::after { border-color: rgba(139, 92, 246, 0.2
 .contact-form {
   display: grid;
   gap: 18px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: minmax(118px, 0.34fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.field-code input {
+  text-align: left;
 }
 
 .form-success {
@@ -2168,7 +2218,7 @@ svg defs {
   }
 
   .brand img {
-    width: 130px;
+    width: 144px;
   }
 
   .nav-cta {
@@ -2176,9 +2226,14 @@ svg defs {
   }
 
   .hero {
-    min-height: auto;
-    padding-top: 120px;
+    min-height: 100svh;
+    padding-top: 140px;
+    margin-top: 0;
     padding-bottom: 120px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
   }
 
   .hero-copy h1 {
@@ -2324,10 +2379,9 @@ body.is-loading #scroll-progress {
    NAVBAR — scroll-active glassmorphism boost
 ───────────────────────────────────────────── */
 .site-header.scrolled .nav-shell {
-  background: rgba(4, 9, 22, 0.88);
+  background: rgba(4, 9, 22, 0.58);
   border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.12);
-  transition: background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(139, 92, 246, 0.1);
 }
 
 /* ─────────────────────────────────────────────
@@ -2680,6 +2734,15 @@ body.is-loading #scroll-progress {
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin: 12px 0 22px;
+  display: inline-block;
+  transform-origin: left center;
+  transition: transform 0.28s ease, text-shadow 0.28s ease;
+  will-change: transform;
+}
+
+.blog-hero h1:hover {
+  transform: scale(1.04);
+  text-shadow: 0 18px 44px rgba(124, 58, 237, 0.34);
 }
 
 .blog-hero p {

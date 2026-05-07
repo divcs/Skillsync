@@ -170,7 +170,7 @@ function runLogoLoader() {
       autoplay: true,
       path: encodeURI(LOGO_LOTTIE_PATH),
       rendererSettings: {
-        preserveAspectRatio: 'xMidYMid slice',
+        preserveAspectRatio: 'xMidYMid meet',
         progressiveLoad: true,
       },
     })

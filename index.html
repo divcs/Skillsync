@@ -72,27 +72,17 @@
         <a class="cursor-hover" href="blog.html">Blog</a>
         <a class="cursor-hover" href="contact.html">Contact</a>
       </nav>
-      <a class="nav-cta button button-small cursor-hover magnetic" href="contact.html">Book Strategy Call</a>
+      <a class="nav-cta button button-small cursor-hover magnetic" href="contact.html">Book a Call</a>
     </div>
   </header>
 
   <main id="top">
     <section class="hero section">
       <div class="hero-scene" aria-hidden="true">
-        <canvas id="hero-particles" class="hero-particles"></canvas>
-        <div class="sky-glow sky-glow-a"></div>
-        <div class="sky-glow sky-glow-b"></div>
-        <div class="orb orb-a" data-parallax="0.25"></div>
-        <div class="orb orb-b" data-parallax="0.18"></div>
-        <div class="orb orb-c" data-parallax="0.12"></div>
-        <div class="ring ring-a"></div>
-        <div class="mountain mountain-back" data-parallax="0.08"></div>
-        <div class="mountain mountain-mid" data-parallax="0.12"></div>
-        <div class="mountain mountain-front" data-parallax="0.18"></div>
-        <div class="fog fog-a"></div>
-        <div class="fog fog-b"></div>
-        <div class="grid-haze"></div>
-        <div id="hero-floating-lines" class="scene-lottie hero-floating-lines"></div>
+        <video class="hero-video" autoplay muted loop playsinline preload="metadata">
+          <source src="assets/video/video-final.mp4" type="video/mp4">
+        </video>
+        <div class="hero-video-overlay"></div>
       </div>
 
       <div class="container hero-layout">
@@ -122,23 +112,6 @@
             </div>
           </div>
         </div>
-
-        <aside class="hero-panel glass-panel" data-reveal>
-          <div class="hero-panel-visual" aria-hidden="true">
-            <div id="hero-ui-lottie" class="hero-ui-lottie"></div>
-          </div>
-          <div class="panel-tag">Transformation Map</div>
-          <div class="path-steps">
-            <span>Student</span>
-            <span>Skilled</span>
-            <span>Positioned</span>
-            <span>Job-Ready</span>
-          </div>
-          <p>
-            Scroll through a cinematic pathway where every section moves your visitor from uncertainty to a strong
-            USA-ready career identity.
-          </p>
-        </aside>
       </div>
 
       <a class="scroll-indicator cursor-hover" href="#journey" aria-label="Scroll to journey section">
@@ -289,7 +262,7 @@
           <div class="carousel-window">
             <div class="carousel-track">
               <article class="testimonial-card">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&h=1000&fit=crop&crop=faces"
+                <img src="assets/employee/Carlos%20Dawson.jpeg"
                   alt="Aryan Patel" class="testimonial-avatar testimonial-avatar--focus-top" loading="eager" decoding="async">
                 <div class="testimonial-content">
                   <span class="salary-badge">+42% salary jump</span>
@@ -302,7 +275,7 @@
               </article>
 
               <article class="testimonial-card">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&h=1000&fit=crop&crop=faces"
+                <img src="assets/employee/Elvia%20White.jpeg"
                   alt="Neha Joseph" class="testimonial-avatar" loading="lazy" decoding="async">
                 <div class="testimonial-content">
                   <span class="salary-badge">First USA offer</span>
@@ -316,7 +289,7 @@
               </article>
 
               <article class="testimonial-card">
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&h=1000&fit=crop&crop=faces"
+                <img src="assets/employee/Robert%20Brown.jpeg"
                   alt="Rahul Menon" class="testimonial-avatar" loading="lazy" decoding="async">
                 <div class="testimonial-content">
                   <span class="salary-badge">3 offers in 6 weeks</span>
@@ -329,7 +302,7 @@
               </article>
 
               <article class="testimonial-card">
-                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=800&h=1000&fit=crop&crop=faces"
+                <img src="assets/employee/Megan%20Palmer.jpeg"
                   alt="Sneha Reddy" class="testimonial-avatar testimonial-avatar--focus-right" loading="lazy" decoding="async">
                 <div class="testimonial-content">
                   <span class="salary-badge">Internship to full-time</span>
@@ -676,6 +649,17 @@
             <input id="email" name="email" type="email" placeholder=" " required>
             <label for="email">Email</label>
           </div>
+          <div class="field-row contact-number-row">
+            <div class="field field-code">
+              <input id="country-code" name="country_code" type="tel" placeholder=" " required inputmode="tel"
+                autocomplete="tel-country-code">
+              <label for="country-code">Country Code</label>
+            </div>
+            <div class="field">
+              <input id="phone" name="phone" type="tel" placeholder=" " required inputmode="tel" autocomplete="tel-national">
+              <label for="phone">Contact Number</label>
+            </div>
+          </div>
           <div class="field field-large">
             <textarea id="goal" name="goal" placeholder=" " rows="4" required></textarea>
             <label for="goal">Career Goal</label>
@@ -701,7 +685,7 @@
   <footer class="site-footer">
     <div class="container footer-shell">
       <p>SkillSync transforms students into USA-ready professionals through clarity, capability, positioning, and
-        placement support.</p>
+        placement support. For all people who need jobs.</p>
       <span>&copy; 2026 SkillSync</span>
     </div>
   </footer>

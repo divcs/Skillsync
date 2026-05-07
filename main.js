@@ -16,6 +16,65 @@ const carouselButtons = document.querySelectorAll('[data-carousel]')
 const faqItems = Array.from(document.querySelectorAll('.faq-item'))
 const contactForm = document.querySelector('.contact-form')
 
+const COUNTRY_CODE_OPTIONS = [
+  { value: '+1', label: 'United States (+1)' },
+  { value: '+1', label: 'Canada (+1)' },
+  { value: '+91', label: 'India (+91)' },
+  { value: '+44', label: 'United Kingdom (+44)' },
+  { value: '+61', label: 'Australia (+61)' },
+  { value: '+64', label: 'New Zealand (+64)' },
+  { value: '+49', label: 'Germany (+49)' },
+  { value: '+33', label: 'France (+33)' },
+  { value: '+39', label: 'Italy (+39)' },
+  { value: '+34', label: 'Spain (+34)' },
+  { value: '+31', label: 'Netherlands (+31)' },
+  { value: '+46', label: 'Sweden (+46)' },
+  { value: '+47', label: 'Norway (+47)' },
+  { value: '+41', label: 'Switzerland (+41)' },
+  { value: '+43', label: 'Austria (+43)' },
+  { value: '+353', label: 'Ireland (+353)' },
+  { value: '+351', label: 'Portugal (+351)' },
+  { value: '+45', label: 'Denmark (+45)' },
+  { value: '+32', label: 'Belgium (+32)' },
+  { value: '+48', label: 'Poland (+48)' },
+  { value: '+420', label: 'Czechia (+420)' },
+  { value: '+36', label: 'Hungary (+36)' },
+  { value: '+30', label: 'Greece (+30)' },
+  { value: '+7', label: 'Russia (+7)' },
+  { value: '+380', label: 'Ukraine (+380)' },
+  { value: '+90', label: 'Turkey (+90)' },
+  { value: '+971', label: 'United Arab Emirates (+971)' },
+  { value: '+966', label: 'Saudi Arabia (+966)' },
+  { value: '+965', label: 'Kuwait (+965)' },
+  { value: '+974', label: 'Qatar (+974)' },
+  { value: '+968', label: 'Oman (+968)' },
+  { value: '+973', label: 'Bahrain (+973)' },
+  { value: '+92', label: 'Pakistan (+92)' },
+  { value: '+880', label: 'Bangladesh (+880)' },
+  { value: '+94', label: 'Sri Lanka (+94)' },
+  { value: '+977', label: 'Nepal (+977)' },
+  { value: '+60', label: 'Malaysia (+60)' },
+  { value: '+65', label: 'Singapore (+65)' },
+  { value: '+66', label: 'Thailand (+66)' },
+  { value: '+62', label: 'Indonesia (+62)' },
+  { value: '+63', label: 'Philippines (+63)' },
+  { value: '+81', label: 'Japan (+81)' },
+  { value: '+82', label: 'South Korea (+82)' },
+  { value: '+86', label: 'China (+86)' },
+  { value: '+852', label: 'Hong Kong (+852)' },
+  { value: '+886', label: 'Taiwan (+886)' },
+  { value: '+55', label: 'Brazil (+55)' },
+  { value: '+52', label: 'Mexico (+52)' },
+  { value: '+54', label: 'Argentina (+54)' },
+  { value: '+57', label: 'Colombia (+57)' },
+  { value: '+56', label: 'Chile (+56)' },
+  { value: '+27', label: 'South Africa (+27)' },
+  { value: '+234', label: 'Nigeria (+234)' },
+  { value: '+20', label: 'Egypt (+20)' },
+  { value: '+212', label: 'Morocco (+212)' },
+  { value: '+254', label: 'Kenya (+254)' },
+]
+
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)',
 ).matches
@@ -768,44 +827,15 @@ function initReveals() {
 }
 
 function initJourney() {
-  const lottieTarget = document.getElementById('journey-lottie')
   const hasJourneyUi =
-    Boolean(lottieTarget) &&
     stageCards.length > 0 &&
     Boolean(journeyTitle && journeyKicker && journeyDetail)
 
   if (!hasJourneyUi) return
 
-  if (lottieTarget) {
-    if (isTouchDevice) {
-      journeyAnimation = loadLottieAnimation({
-        container: lottieTarget,
-        loop: false,
-        autoplay: false,
-        path: 'assets/lottie/1skillsync-fixed.json',
-        preserveAspectRatio: 'xMidYMid slice',
-      })
-      if (journeyAnimation) {
-        const onJourneyLoaded = () => {
-          journeyAnimation.goToAndStop(0, true)
-        }
-        if (journeyAnimation.isLoaded) {
-          onJourneyLoaded()
-        } else {
-          journeyAnimation.addEventListener('DOMLoaded', onJourneyLoaded)
-        }
-      }
-    } else {
-      journeyAnimation = loadLottieAnimation({
-        container: lottieTarget,
-        loop: false,
-        autoplay: false,
-        path: 'assets/lottie/1skillsync-fixed.json',
-        preserveAspectRatio: 'xMidYMid slice',
-      })
-      journeyAnimation?.addEventListener('DOMLoaded', () => updateJourney(0))
-    }
-  }
+  // Journey visual is intentionally abstract (no brand logo),
+  // so we do not load the Journey Lottie here.
+  journeyAnimation = null
 
   if (window.innerWidth > 1100) {
     ScrollTrigger.create({
@@ -869,10 +899,7 @@ function updateJourney(progress) {
       journeyDetail.textContent = activeCard.dataset.detail || ''
     }
 
-    if (journeyAnimation && journeyAnimation.totalFrames) {
-      const frame = journeyAnimation.totalFrames * p
-      journeyAnimation.goToAndStop(frame, true)
-    }
+    // Visual is abstract on purpose; no lottie frame syncing.
   })
 }
 
@@ -1048,12 +1075,91 @@ function initForm() {
 
   const submitButton = contactForm.querySelector("button[type='submit']")
   const formSuccess = contactForm.querySelector('.form-success')
+  const countryCode = contactForm.querySelector('#country-code')
+  const phone = contactForm.querySelector('#phone')
+
+  const syncSelectLabel = () => {
+    if (!countryCode) return
+    const field = countryCode.closest('.field')
+    if (!field) return
+    field.classList.toggle('has-value', Boolean(String(countryCode.value || '').trim()))
+  }
+
+  if (countryCode) {
+    const fieldCode = countryCode.closest('.field-code')
+    if (fieldCode) {
+      const menu = document.createElement('div')
+      menu.className = 'country-code-menu'
+      menu.hidden = true
+      fieldCode.appendChild(menu)
+
+      const renderCountryCodeMenu = (query = '') => {
+        const q = String(query || '').trim().toLowerCase()
+        const filtered = COUNTRY_CODE_OPTIONS
+          .filter((option) => option.label.toLowerCase().includes(q) || option.value.includes(q))
+          .slice(0, 14)
+
+        menu.innerHTML = ''
+        filtered.forEach((option) => {
+          const button = document.createElement('button')
+          button.type = 'button'
+          button.className = 'country-code-item'
+          button.textContent = option.label
+          button.addEventListener('click', () => {
+            countryCode.value = option.label
+            syncSelectLabel()
+            menu.hidden = true
+          })
+          menu.appendChild(button)
+        })
+      }
+
+      countryCode.removeAttribute('list') // disable native white datalist popup
+      countryCode.setAttribute('autocomplete', 'off')
+
+      countryCode.addEventListener('focus', () => {
+        renderCountryCodeMenu(countryCode.value)
+        menu.hidden = false
+      })
+
+      countryCode.addEventListener('input', () => {
+        renderCountryCodeMenu(countryCode.value)
+        menu.hidden = false
+      })
+
+      countryCode.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') menu.hidden = true
+      })
+
+      document.addEventListener('click', (event) => {
+        if (!fieldCode.contains(event.target)) menu.hidden = true
+      })
+    }
+
+    syncSelectLabel()
+    countryCode.addEventListener('change', syncSelectLabel)
+    countryCode.addEventListener('input', syncSelectLabel)
+  }
 
   contactForm.addEventListener('submit', (event) => {
     event.preventDefault()
 
     if (!submitButton) {
       return
+    }
+
+    // Basic validity gating (HTML required fields)
+    if (!contactForm.checkValidity()) {
+      contactForm.reportValidity()
+      return
+    }
+
+    // Combine country code + phone into a single number value
+    if (countryCode && phone && countryCode.value) {
+      const codeMatch = String(countryCode.value || '').trim().match(/\+\d{1,4}/)
+      const code = codeMatch ? codeMatch[0] : ''
+      const raw = String(phone.value || '').trim()
+      if (code && raw && !raw.startsWith('+')) phone.value = `${code} ${raw}`
     }
 
     submitButton.textContent = 'Roadmap Requested'

@@ -1136,6 +1136,10 @@ function initForm() {
   const formSuccess = contactForm.querySelector('.form-success')
   const countryCode = contactForm.querySelector('#country-code')
   const phone = contactForm.querySelector('#phone')
+  const parseCountryDialCode = () => {
+    const m = String(countryCode?.value || '').match(/\+(\d{1,4})/)
+    return m ? `+${m[1]}` : ''
+  }
 
   const syncSelectLabel = () => {
     if (!countryCode) return
@@ -1201,10 +1205,122 @@ function initForm() {
     countryCode.addEventListener('input', syncSelectLabel)
   }
 
+  // Per-field validation helpers
+  const clearFieldError = (el) => {
+    if (!el) return
+    el.setCustomValidity('')
+    const fieldWrap = el.closest('.field')
+    fieldWrap?.classList.remove('field-error')
+  }
+
+  const setFieldError = (el, message) => {
+    if (!el) return
+    el.setCustomValidity(message)
+    const fieldWrap = el.closest('.field')
+    fieldWrap?.classList.add('field-error')
+  }
+
+  const validateContactForm = () => {
+    let ok = true
+
+    const name = contactForm.querySelector('#name')
+    const email = contactForm.querySelector('#email')
+    const country = countryCode
+    const ph = phone
+    const goal = contactForm.querySelector('#goal')
+
+    // Name: required, at least 2 characters
+    clearFieldError(name)
+    if (!name || String(name.value || '').trim().length < 2) {
+      setFieldError(name, 'Please enter your name (at least 2 characters).')
+      ok = false
+    }
+
+    // Email: use simple RFC-like check
+    clearFieldError(email)
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRe.test(String(email.value || '').trim())) {
+      setFieldError(email, 'Please enter a valid email address.')
+      ok = false
+    }
+
+    // Country code: must contain a + and digits
+    clearFieldError(country)
+    if (!country || !String(country.value || '').trim()) {
+      setFieldError(country, 'Please select or enter your country code.')
+      ok = false
+    } else {
+      const m = String(country.value || '').match(/\+(\d{1,4})/)
+      if (!m) {
+        setFieldError(country, 'Country code must include a "+" and digits, e.g. +1 or +91.')
+        ok = false
+      }
+    }
+
+    // Phone: require valid digit length; India is strict 10 digits
+    clearFieldError(ph)
+    if (!ph || !String(ph.value || '').trim()) {
+      setFieldError(ph, 'Please enter your contact number.')
+      ok = false
+    } else {
+      const digits = String(ph.value || '').replace(/\D/g, '')
+      const dialCode = parseCountryDialCode()
+      if (dialCode === '+91') {
+        if (digits.length !== 10 || !/^[6-9]\d{9}$/.test(digits)) {
+          setFieldError(ph, 'For India, enter a valid 10-digit mobile number (starts with 6-9).')
+          ok = false
+        }
+      } else if (digits.length < 6 || digits.length > 15) {
+        setFieldError(ph, 'Please enter a valid phone number (6-15 digits).')
+        ok = false
+      }
+    }
+
+    // Goal: ensure some meaningful text
+    clearFieldError(goal)
+    if (!goal || String(goal.value || '').trim().length < 10) {
+      setFieldError(goal, 'Please describe your career goal (at least 10 characters).')
+      ok = false
+    }
+
+    return ok
+  }
+
+  // Clear validation state while user types
+  ;[contactForm.querySelector('#name'), contactForm.querySelector('#email'), countryCode, phone, contactForm.querySelector('#goal')]
+    .forEach((el) => {
+      if (!el) return
+      el.addEventListener('input', () => {
+        clearFieldError(el)
+      })
+    })
+
+  if (phone) {
+    phone.setAttribute('inputmode', 'numeric')
+    phone.addEventListener('input', () => {
+      const current = String(phone.value || '')
+      const digitsOnly = current.replace(/\D/g, '')
+      const dialCode = parseCountryDialCode()
+      const limited = dialCode === '+91' ? digitsOnly.slice(0, 10) : digitsOnly.slice(0, 15)
+      if (current !== limited) {
+        phone.value = limited
+      }
+      clearFieldError(phone)
+    })
+  }
+
   contactForm.addEventListener('submit', (event) => {
     event.preventDefault()
 
     if (!submitButton) {
+      return
+    }
+
+    // Run our per-field validation first
+    const valid = validateContactForm()
+    if (!valid) {
+      // Let browser show the first invalid field message
+      contactForm.reportValidity()
       return
     }
 
@@ -1216,10 +1332,9 @@ function initForm() {
 
     // Combine country code + phone into a single number value
     if (countryCode && phone && countryCode.value) {
-      const codeMatch = String(countryCode.value || '').trim().match(/\+\d{1,4}/)
-      const code = codeMatch ? codeMatch[0] : ''
-      const raw = String(phone.value || '').trim()
-      if (code && raw && !raw.startsWith('+')) phone.value = `${code} ${raw}`
+      const code = parseCountryDialCode()
+      const rawDigits = String(phone.value || '').replace(/\D/g, '')
+      if (code && rawDigits) phone.value = `${code} ${rawDigits}`
     }
 
     submitButton.textContent = 'Roadmap Requested'

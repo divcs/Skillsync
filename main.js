@@ -1687,16 +1687,10 @@ try { initCounters() } catch (e) { console.warn('initCounters:', e) }
 function initTextReveal() {
   if (prefersReducedMotion) return
 
-  // Target every h2 in the page, plus blog-hero h1
-  const headings = [
-    ...document.querySelectorAll('h2'),
-    ...document.querySelectorAll('.blog-hero h1'),
-  ]
+  // Target every h2 in the page, excluding blog content
+  const headings = document.querySelectorAll('h2:not(.blog-article h2, .blog-article h3, .blog-article h4, .blog-article h5, .blog-article h6)')
 
   headings.forEach((el) => {
-    // Blog hero title has its own typing effect.
-    if (el.matches('.blog-hero h1')) return
-
     // Skip if already processed by another function
     if (el.dataset.revealDone) return
     el.dataset.revealDone = '1'
@@ -1759,6 +1753,7 @@ function initTextReveal() {
 }
 try { initTextReveal() } catch (e) { console.warn('initTextReveal:', e) }
 
+/* typing effect commented
 function initBlogTitleTyping() {
   const titleEl = document.querySelector('.blog-hero h1[data-scramble]')
   if (!titleEl) return
@@ -1796,7 +1791,10 @@ function initBlogTitleTyping() {
   // Re-run when blog content is swapped by query param links.
   window.addEventListener('blog-title-updated', typeTitle)
 }
-try { initBlogTitleTyping() } catch (e) { console.warn('initBlogTitleTyping:', e) }
+
+*/
+// Blog title typing animation removed - headings are now static
+// try { initBlogTitleTyping() } catch (e) { console.warn('initBlogTitleTyping:', e) }
 
 // ── Premium Lens Typography Hover (Apple dock-like magnification) ───────────
 function initLensTypography(selector, userOptions = {}) {
@@ -2184,8 +2182,8 @@ function initHeroEntranceSequence() {
       }
       const wordInners = h1.querySelectorAll('.reveal-word-inner')
       if (wordInners.length) {
-        gsap.set(wordInners, { yPercent: 110 })
-        tl.to(wordInners, { yPercent: 0, duration: 0.78, stagger: 0.055, ease: 'power3.out' }, 0.22)
+        gsap.set(wordInners, { yPercent: 108 })
+        tl.to(wordInners, { yPercent: 0, duration: 0.82, stagger: 0.052, ease: 'power3.out' }, 0.22)
       } else {
         tl.fromTo(h1, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.75 }, 0.22)
       }

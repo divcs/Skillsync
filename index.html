@@ -79,36 +79,33 @@
   <main id="top">
     <section class="hero section">
       <div class="hero-scene" aria-hidden="true">
+        <canvas id="hero-particles" class="hero-particles"></canvas>
         <video class="hero-video" autoplay muted loop playsinline preload="metadata">
           <source src="assets/video/video-final.mp4" type="video/mp4">
         </video>
+        <div class="hero-ambient hero-ambient-c" data-parallax="0.18"></div>
         <div class="hero-video-overlay"></div>
       </div>
 
       <div class="container hero-layout">
         <div class="hero-copy">
           <p class="eyebrow" data-hero-eyebrow>USA Career Transformation Experience</p>
-          <h1 data-scramble>From Student to Job-Ready Professional</h1>
+          <h1 data-scramble>Land Your First<br>U.S. Role</h1>
           <p class="hero-text">
-            SkillSync helps students decode the USA job market, sharpen what employers actually hire for, and step into
-            interviews with proof, presence, and positioning.
+            Decode the U.S. hiring landscape with clarity and strategy.<br>
+            Build confidence and secure opportunities with focused mentorship.
           </p>
           <div class="hero-actions">
             <a class="button cursor-hover magnetic" href="#journey">Start Your Journey</a>
             <a class="button button-secondary cursor-hover magnetic" href="#proof">See Success Stories</a>
           </div>
-          <div class="hero-metrics">
-            <div>
-              <span data-count="1200" data-suffix="+">1200+</span>
-              <p>students coached into market-ready candidates</p>
-            </div>
-            <div>
-              <span data-count="4" data-suffix="-step">4-step</span>
-              <p>journey from confusion to confident applications</p>
-            </div>
-            <div>
-              <span>USA</span>
-              <p>focused positioning for internships and full-time roles</p>
+          <div class="hero-trust" aria-label="Trusted placement brands">
+            <p>Trusted by students targeting Google, Amazon, Microsoft, Deloitte</p>
+            <div class="hero-trust-logos">
+              <span>Google</span>
+              <span>Amazon</span>
+              <span>Microsoft</span>
+              <span>Deloitte</span>
             </div>
           </div>
         </div>
@@ -122,8 +119,8 @@
 
     <section id="journey" class="journey section">
       <div class="container section-intro" data-reveal>
-        <p class="eyebrow">Scroll-Based Storytelling</p>
-        <h2 data-scramble>A guided transformation built for ambitious students targeting the USA</h2>
+        <p class="eyebrow">Premium Transformation Roadmap</p>
+        <h2 data-scramble>Career Journey</h2>
       </div>
 
       <div class="journey-track">
@@ -170,6 +167,36 @@
                 We map your strengths, desired roles, visa realities, and market opportunities so your next steps feel
                 precise instead of overwhelming.
               </p>
+            </div>
+            <div class="journey-visual-panel">
+              <div class="journey-panel-head">
+                <strong id="journey-panel-heading">Roadmap Intelligence</strong>
+                <span id="journey-panel-meta">Week 1 to 2</span>
+              </div>
+              <div class="journey-panel-track" aria-hidden="true">
+                <span class="journey-track-line">
+                  <i id="journey-track-fill"></i>
+                </span>
+              </div>
+              <div class="journey-panel-stats">
+                <article>
+                  <small>Focus</small>
+                  <p id="journey-stat-focus">Role Clarity</p>
+                </article>
+                <article>
+                  <small>Mentor Layer</small>
+                  <p id="journey-stat-mentor">1:1 Strategy Sprint</p>
+                </article>
+                <article>
+                  <small>Outcome</small>
+                  <p id="journey-stat-outcome">Clear role map and plan</p>
+                </article>
+              </div>
+              <div class="journey-panel-tags" id="journey-panel-tags">
+                <span>Role-fit analysis</span>
+                <span>Market decoding</span>
+                <span>Visa-aware planning</span>
+              </div>
             </div>
           </div>
         </div>
@@ -647,9 +674,7 @@
           </div>
           <div class="field-row contact-number-row">
             <div class="field field-code">
-              <select id="country-code" name="country_code" required>
-                <option value="" selected disabled>Country Code</option>
-              </select>
+              <input id="country-code" name="country_code" type="text" placeholder=" " required autocomplete="off">
               <label for="country-code">Country Code</label>
             </div>
             <div class="field">

@@ -8,6 +8,12 @@ const progressValue = null // removed
 const journeyTitle = document.getElementById('journey-title')
 const journeyKicker = document.getElementById('journey-kicker')
 const journeyDetail = document.getElementById('journey-detail')
+const journeyPanelHeading = document.getElementById('journey-panel-heading')
+const journeyPanelMeta = document.getElementById('journey-panel-meta')
+const journeyStatFocus = document.getElementById('journey-stat-focus')
+const journeyStatMentor = document.getElementById('journey-stat-mentor')
+const journeyStatOutcome = document.getElementById('journey-stat-outcome')
+const journeyPanelTags = document.getElementById('journey-panel-tags')
 const carouselTrack = document.querySelector('.carousel-track')
 const testimonialCards = Array.from(
   document.querySelectorAll('.testimonial-card'),
@@ -85,6 +91,40 @@ let carouselTimer
 let journeyAnimation
 let _journeyRaf = false
 let _lastJourneyProgress = -1
+const JOURNEY_PANEL_CONTENT = [
+  {
+    heading: 'Roadmap Intelligence',
+    meta: 'Week 1 to 2',
+    focus: 'Role Clarity',
+    mentor: '1:1 Strategy Sprint',
+    outcome: 'Clear role map and plan',
+    tags: ['Role-fit analysis', 'Market decoding', 'Visa-aware planning'],
+  },
+  {
+    heading: 'Execution Engine',
+    meta: 'Week 3 to 6',
+    focus: 'Skill Depth',
+    mentor: 'Project + Feedback Loops',
+    outcome: 'Portfolio-level proof of capability',
+    tags: ['Hands-on projects', 'Interview skill drills', 'Recruiter-ready outputs'],
+  },
+  {
+    heading: 'Positioning Studio',
+    meta: 'Week 7 to 9',
+    focus: 'Personal Brand',
+    mentor: 'Story + Profile Optimization',
+    outcome: 'High-signal profile across channels',
+    tags: ['Resume narrative', 'LinkedIn positioning', 'Impact storytelling'],
+  },
+  {
+    heading: 'Offer Conversion Layer',
+    meta: 'Week 10+',
+    focus: 'Placement Confidence',
+    mentor: 'Mock Rounds + Offer Strategy',
+    outcome: 'Interviews converted to offers',
+    tags: ['Live mock interviews', 'Recruiter communication', 'Offer negotiation'],
+  },
+]
 const PRELOADER_SKIP_ONCE_KEY = 'skillsync-preloader-skip-once'
 const LOGO_LOADER_SHOWN_KEY = 'skillsync-logo-loader-shown'
 const LOGO_LOTTIE_PATH = 'assets/skillsync.json'
@@ -899,6 +939,25 @@ function updateJourney(progress) {
       journeyDetail.textContent = activeCard.dataset.detail || ''
     }
 
+    const panel = JOURNEY_PANEL_CONTENT[stageIndex]
+    if (panel) {
+      if (journeyPanelHeading) journeyPanelHeading.textContent = panel.heading
+      if (journeyPanelMeta) journeyPanelMeta.textContent = panel.meta
+      if (journeyStatFocus) journeyStatFocus.textContent = panel.focus
+      if (journeyStatMentor) journeyStatMentor.textContent = panel.mentor
+      if (journeyStatOutcome) journeyStatOutcome.textContent = panel.outcome
+      if (journeyPanelTags) {
+        journeyPanelTags.innerHTML = panel.tags.map((tag) => `<span>${tag}</span>`).join('')
+      }
+    }
+
+    const stagesEl = document.querySelector('.journey-stages')
+    if (stagesEl) {
+      const cardHeight = stageCards[stageIndex]?.offsetHeight || 96
+      stagesEl.style.setProperty('--journey-progress', `${stageIndex * (cardHeight + 16) + 8}px`)
+    }
+    document.documentElement.style.setProperty('--journey-panel-fill', `${((stageIndex + 1) / stageCards.length) * 100}%`)
+
     // Visual is abstract on purpose; no lottie frame syncing.
   })
 }
@@ -1107,6 +1166,7 @@ function initForm() {
           button.textContent = option.label
           button.addEventListener('click', () => {
             countryCode.value = option.label
+            countryCode.dispatchEvent(new Event('input', { bubbles: true }))
             syncSelectLabel()
             menu.hidden = true
           })

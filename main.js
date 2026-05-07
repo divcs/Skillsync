@@ -2142,10 +2142,10 @@ function initPremiumHeadingLens() {
 
   const initBlogLens = () => {
     initLensTypography('.blog-hero h1, .blog-article h2, .blog-article h3', {
-      radius: 50,
-      intensity: 0.035,
-      lift: 0.6,
-      inertia: 0.08,
+      radius: 78,
+      intensity: 0.075,
+      lift: 1.35,
+      inertia: 0.12,
     })
   }
 

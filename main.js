@@ -481,6 +481,7 @@ window.addEventListener('DOMContentLoaded', initPreloader)
 try { initLenis() } catch(e) { console.warn('initLenis error:', e) }
 try { initCursor() } catch(e) { console.warn('initCursor error:', e) }
 try { initHeroParallax() } catch(e) { console.warn('initHeroParallax error:', e) }
+try { initServicesLoading() } catch(e) { console.warn('initServicesLoading error:', e) }
 try { initLottieAccents() } catch(e) { console.warn('initLottieAccents error:', e) }
 try { initReveals() } catch(e) { console.warn('initReveals error:', e) }
 try { initJourney() } catch(e) { console.warn('initJourney error:', e) }
@@ -705,6 +706,7 @@ function loadLottieAnimation({
   renderer = 'svg',
   assetsPath,
   preserveAspectRatio = 'xMidYMid meet',
+  hideOnTransparent = true,
 }) {
   if (typeof lottie === 'undefined') {
     return null
@@ -728,17 +730,36 @@ function loadLottieAnimation({
     assetsPath: assetsPath ? encodeURI(assetsPath) : undefined,
     rendererSettings: {
       progressiveLoad: true,
-      hideOnTransparent: true,
+      hideOnTransparent,
       preserveAspectRatio,
     },
   })
 
   animation.setSpeed(speed)
 
+  animation.addEventListener('data_failed', (e) => {
+    console.warn('[SkillSync Lottie] data_failed:', { path, container, e })
+  })
+
   if (prefersReducedMotion) {
-    animation.addEventListener('DOMLoaded', () => {
-      animation.goToAndStop(0, true)
-    })
+    const onLoaded = () => {
+      // With reduced motion, we disable autoplay/loop.
+      // Some Lotties have a blank/transparent frame at index 0, so we stop on a
+      // mid-ish frame to ensure something is visible.
+      const lastFrame = Math.max(0, (animation.totalFrames || 1) - 1)
+      const targetFrame = lastFrame ? Math.round(lastFrame * 0.35) : 0
+      animation.goToAndStop(targetFrame, true)
+    }
+
+    // In some timing scenarios, DOMLoaded may fire before we attach the listener.
+    if (animation.isLoaded) {
+      onLoaded()
+    } else {
+      animation.addEventListener('DOMLoaded', onLoaded)
+    }
+
+    // Extra robustness: if the library emits different readiness events, handle them too.
+    animation.addEventListener('data_ready', onLoaded)
   }
 
   return animation
@@ -782,10 +803,34 @@ function bindLottieToScroll(
   animation.addEventListener('DOMLoaded', handleReady)
 }
 
+function initServicesLoading() {
+  const servicesSection = document.querySelector('.services.section')
+  if (!servicesSection) return
+
+  document.body.classList.add('services-loading')
+  document.body.classList.remove('services-loaded')
+
+  let done = false
+  const finish = () => {
+    if (done) return
+    done = true
+    document.body.classList.remove('services-loading')
+    document.body.classList.add('services-loaded')
+  }
+
+  // Fallback so we never get stuck in skeleton state.
+  window.setTimeout(finish, 1400)
+
+  // When the services-side lottie reports ready/failed, end skeleton early.
+  window.addEventListener('services-lottie-ready', finish, { once: true })
+  window.addEventListener('services-lottie-failed', finish, { once: true })
+}
+
 function initLottieAccents() {
   const compactViewport = window.matchMedia('(max-width: 1100px)').matches
 
-  if (!HAS_HERO) return
+  // Do not early-return when there is no `.hero` on the page.
+  // The Services page still needs the `job-match-lottie` right-side animation.
 
   // ── Hero floating lines ─────────────────────────────────────────
   // On mobile: skipped entirely (CSS hides the container too).
@@ -844,10 +889,22 @@ function initLottieAccents() {
   // Load across viewports so it is consistently visible.
   accentAnimations.jobMatch = loadLottieAnimation({
     container: 'job-match-lottie',
-    path: 'assets/lottie-files/search-for-employee/animations/12345.json',
-    assetsPath: './',
+    // Use the services-side animation shipped with the project.
+    path: '/assets/services.json',
+    assetsPath: '/',
     speed: 0.92,
+    hideOnTransparent: false,
   })
+
+  if (accentAnimations.jobMatch) {
+    const notifyReady = () => window.dispatchEvent(new CustomEvent('services-lottie-ready'))
+    const notifyFailed = () => window.dispatchEvent(new CustomEvent('services-lottie-failed'))
+
+    // "data_ready" is a common lottie-web event; DOMLoaded is used elsewhere in this codebase.
+    accentAnimations.jobMatch.addEventListener('data_ready', notifyReady)
+    accentAnimations.jobMatch.addEventListener('DOMLoaded', notifyReady)
+    accentAnimations.jobMatch.addEventListener('data_failed', notifyFailed)
+  }
 
   // ── Form rocket (contact section) ───────────────────────────────
   accentAnimations.formRocket = loadLottieAnimation({
@@ -856,6 +913,15 @@ function initLottieAccents() {
     loop: false,
     autoplay: false,
     speed: 1.04,
+  })
+
+  // ── Proof section (isometric data analysis) ─────────────────────
+  // Career placement visualization with continuous loop
+  accentAnimations.proofLottie = loadLottieAnimation({
+    container: 'proof-lottie',
+    path: 'assets/lottie-files/Isometric data analysis.json',
+    speed: 0.95,
+    hideOnTransparent: false,
   })
 }
 
@@ -896,7 +962,7 @@ function initJourney() {
     ScrollTrigger.create({
       trigger: '.journey-track',
       start: 'top top+=90',
-      end: 'bottom bottom',
+      end: '+=235%',
       pin: '.journey-pin',
       scrub: true,
       anticipatePin: 1,
@@ -2130,16 +2196,6 @@ function initPremiumHeadingLens() {
     })
   }
 
-  const initHeroLens = () => {
-    if (!HAS_HERO) return
-    initLensTypography('.hero-copy h1', {
-      radius: 54,
-      intensity: 0.035,
-      lift: 0.7,
-      inertia: 0.07,
-    })
-  }
-
   const initBlogLens = () => {
     initLensTypography('.blog-hero h1, .blog-article h2, .blog-article h3', {
       radius: 78,
@@ -2150,14 +2206,6 @@ function initPremiumHeadingLens() {
   }
 
   initBlogLens()
-
-  if (preloaderWillRun()) {
-    window.addEventListener('preloader-done', () => {
-      window.setTimeout(initHeroLens, 900)
-    }, { once: true })
-  } else {
-    initHeroLens()
-  }
 
   const blogHeroTitle = document.querySelector('.blog-hero h1')
   if (blogHeroTitle) {
@@ -2364,24 +2412,9 @@ function initHeroEntranceSequence() {
       setTimeout(() => eyebrow.classList.add('is-active'), 700)
     }
 
-    // H1 — word curtain slide-up
-    // IMPORTANT: h1 was set to opacity:0 via elementsToHide;
-    // restore container to opacity:1 first so word-inners are visible
+    // H1 — preserve original line breaks for exact visual alignment.
     if (h1) {
-      tl.set(h1, { opacity: 1 }, 0.15)
-      const raw = getNormalizedElementText(h1)
-      if (raw) {
-        h1.innerHTML = raw.split(/\s+/).filter((value) => !!value)
-          .map((w) => `<span class="reveal-word-wrap"><span class="reveal-word-inner">${w}</span></span>`)
-          .join(' ')
-      }
-      const wordInners = h1.querySelectorAll('.reveal-word-inner')
-      if (wordInners.length) {
-        gsap.set(wordInners, { yPercent: 108 })
-        tl.to(wordInners, { yPercent: 0, duration: 0.82, stagger: 0.052, ease: 'power3.out' }, 0.22)
-      } else {
-        tl.fromTo(h1, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 0.75 }, 0.22)
-      }
+      tl.fromTo(h1, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.78 }, 0.22)
     }
 
     // Paragraph text — starts with h1 (no delay), word curtain

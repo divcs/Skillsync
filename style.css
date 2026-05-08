@@ -594,10 +594,11 @@ button {
 .brand img {
   display: block;
   width: auto;
-  height: 38px;
-  max-width: 210px;
+  height: 44px;
+  max-width: 236px;
   object-fit: contain;
-  opacity: 0.96;
+  opacity: 1;
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.12));
 }
 
 .site-nav {
@@ -708,20 +709,20 @@ button {
   align-items: start;
   justify-items: start;
   gap: 32px;
-  padding-left: clamp(0px, 3.5vw, 44px);
+  padding-left: 0;
 }
 
 .hero-copy {
-  max-width: 520px;
+  max-width: min(100%, 640px);
   text-shadow: none;
 }
 
 .hero-copy h1 {
-  display: inline-block;
+  display: block;
 
   font-size: clamp(3.8rem, 7vw, 5.8rem);
 
-  max-width: 12ch;
+  max-width: 10ch;
 
   margin: 0 0 clamp(1.1rem, 2.1vw, 1.8rem);
 
@@ -766,7 +767,7 @@ button {
 }
 
 .hero-text {
-  max-width: 420px;
+  max-width: 520px;
   margin: 14px 0 0;
   font-size: clamp(0.98rem, 1.55vw, 1.08rem);
   color: rgba(248, 250, 252, 0.82);
@@ -1228,7 +1229,7 @@ button {
 }
 
 .journey-track {
-  min-height: 360vh;
+  min-height: 280vh;
 }
 
 .journey-pin {
@@ -1554,6 +1555,81 @@ body[data-stage='3'] .journey-glow {
   aspect-ratio: 1 / 1;
 }
 
+/* ── Services loading skeleton ───────────────────────────────────── */
+@keyframes shimmerSweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+body.services-loading .services [data-reveal] {
+  opacity: 1;         /* keep layout stable */
+  transform: none;    /* avoid reveal transforms fighting skeleton */
+}
+
+body.services-loading .services-visual {
+  opacity: 0.75;
+}
+
+body.services-loading .job-match-lottie {
+  position: relative;
+}
+
+body.services-loading .job-match-lottie::before {
+  content: '';
+  position: absolute;
+  inset: 10%;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(34, 211, 238, 0.55);
+  animation: spinLoader 0.9s linear infinite;
+  filter: drop-shadow(0 10px 30px rgba(2, 6, 23, 0.35));
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+body.services-loading .service-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+}
+
+body.services-loading .service-card > * {
+  opacity: 0;
+}
+
+body.services-loading .service-card::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.03)
+  );
+}
+
+body.services-loading .service-card::after {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    transparent 80%
+  );
+  animation: shimmerSweep 1.2s ease-in-out infinite;
+  opacity: 0.9;
+}
+
+body.services-loaded .service-card > * {
+  opacity: 1;
+  transition: opacity 420ms ease;
+}
+
 .service-grid,
 .team-grid {
   display: grid;
@@ -1644,6 +1720,86 @@ body[data-stage='3'] .journey-glow {
   border-radius: 32px;
   overflow: hidden;
 }
+
+.proof-header-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 340px);
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
+.proof-intro {
+  max-width: none;
+  margin-bottom: 0;
+}
+
+.proof-intro h2 {
+  max-width: 14ch;
+  line-height: 1.04;
+}
+
+.proof-lottie-container {
+  position: relative;
+  width: min(100%, 340px);
+  aspect-ratio: 1 / 1;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.proof-signal::before {
+  content: '';
+  position: absolute;
+  inset: 12% 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 68%);
+  filter: blur(20px);
+  animation: none;
+}
+
+.proof-signal-copy {
+  display: none;
+}
+
+.proof-signal-orbit {
+  display: none;
+}
+
+.proof-signal-orbit::before,
+.proof-signal-orbit::after {
+  display: none;
+}
+
+.proof-signal-orbit-a {
+  display: none;
+}
+
+.proof-signal-orbit-b {
+  display: none;
+}
+
+.proof-signal-core {
+  display: none;
+}
+
+.proof-signal-core i {
+  display: none;
+}
+
+.proof-signal-bars {
+  display: none;
+}
+
+.proof-signal-bars span {
+  display: none;
+}
+
+/* Career Ascent Animation: Radiating Opportunities */
+/* Keyframes preserved but no longer used - can be removed in future cleanup */
 
 .carousel-header {
   display: flex;
@@ -2341,7 +2497,7 @@ svg defs {
 :is(
     .hero-ui-lottie,
     .hero-scanner-lottie,
-  
+  .proof-motion-lottie,
     .job-match-lottie,
     .form-rocket-lottie
   )
@@ -2448,8 +2604,20 @@ svg defs {
     grid-template-columns: 1fr;
   }
 
+  .proof-header-row {
+    grid-template-columns: 1fr;
+  }
+
+  .proof-lottie-container {
+    justify-self: start;
+  }
+
   .hero-panel {
     max-width: 620px;
+  }
+
+  .proof-motion-panel {
+    max-width: 340px;
   }
 
   .journey-copy {
@@ -2460,8 +2628,7 @@ svg defs {
     grid-template-columns: 1fr;
   }
 
-  .hero-scanner-lottie,
-  .services-visual {
+  .hero-scanner-lottie {
     display: none;
   }
 
@@ -2482,6 +2649,18 @@ svg defs {
   .journey-pin {
     width: var(--container);
     min-height: auto;
+  }
+
+  /* Keep the Services right-side animation visible and in-flow on tablets */
+  .services-visual {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: min(86vw, 380px);
+    margin: 0 auto 26px;
+    z-index: 0;
+    opacity: 0.85;
+    filter: drop-shadow(0 20px 50px rgba(2, 6, 23, 0.35));
   }
 }
 
@@ -2510,7 +2689,8 @@ svg defs {
   }
 
   .brand img {
-    width: 144px;
+    width: 154px;
+    height: auto;
   }
 
   .nav-cta {
@@ -2524,16 +2704,68 @@ svg defs {
     padding-bottom: 120px;
   }
 
+  /* Slightly smaller animation for phones */
+  .services-visual {
+    width: min(92vw, 300px);
+    margin-bottom: 18px;
+  }
+
   .field-row {
     grid-template-columns: 1fr;
   }
 
   .hero-copy h1 {
     font-size: clamp(2.35rem, 8.4vw, 3.35rem);
-    max-width: 12ch;
+    max-width: 100%;
     overflow-wrap: break-word;
     word-break: break-word;
     margin-bottom: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  .hero-layout {
+    padding-left: 0;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+  }
+
+  .hero-actions .button {
+    width: min(100%, 320px);
+  }
+
+  .proof-header-row {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  .proof-intro h2 {
+    max-width: 100%;
+  }
+
+  .proof-lottie-container {
+    width: min(100%, 240px);
+  }
+
+  .proof-signal {
+    justify-self: start;
+    width: min(100%, 260px);
+    aspect-ratio: 1 / 0.92;
+  }
+
+  .proof-signal-core {
+    width: 96px;
+    height: 96px;
+  }
+
+  .proof-signal-bars {
+    width: min(82%, 180px);
+    bottom: 10px;
+  }
+
+  .proof-signal-bars span {
+    min-width: 8px;
   }
 
   .hero-video {
@@ -2643,6 +2875,120 @@ svg defs {
   }
 }
 
+/* Ultra-wide polish: avoid oversized vertical breathing on 1440px+ */
+@media (min-width: 1440px) {
+  .section {
+    padding: 92px 0;
+  }
+
+  .hero {
+    padding-top: 210px;
+    padding-bottom: 92px;
+  }
+
+  .hero-copy {
+    max-width: 700px;
+  }
+
+  .hero-copy h1 {
+    max-width: 11ch;
+    font-size: clamp(4.2rem, 5.2vw, 6.1rem);
+  }
+
+  .hero-text {
+    max-width: 560px;
+  }
+
+  .journey-track {
+    min-height: 250vh;
+  }
+
+  .journey-pin {
+    min-height: calc(100vh - 140px);
+  }
+
+  .proof-header-row {
+    gap: 32px;
+  }
+
+  .proof-intro h2 {
+    max-width: 12ch;
+  }
+}
+
+/* Small-phone polish: tighten spacing and prevent crowding */
+@media (max-width: 375px) {
+  .container {
+    width: min(100vw - 20px, 100%);
+    padding-inline: 10px;
+  }
+
+  .section {
+    padding: 72px 0;
+  }
+
+  .hero {
+    padding-top: 148px;
+    padding-bottom: 88px;
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2rem, 10.4vw, 2.7rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-text {
+    font-size: 0.94rem;
+    line-height: 1.62;
+  }
+
+  .hero-actions {
+    gap: 12px;
+  }
+
+  .hero-actions .button {
+    min-height: 50px;
+    padding: 0.78rem 1.2rem;
+    width: 100%;
+  }
+
+  .journey-pin,
+  .contact-shell,
+  .carousel-shell {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .stage-card {
+    padding: 14px 14px;
+    border-radius: 16px;
+  }
+
+  .stage-card p {
+    margin-top: 8px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .proof-intro h2 {
+    font-size: clamp(1.7rem, 8vw, 2.1rem);
+    line-height: 1.08;
+  }
+
+  .proof-lottie-container {
+    width: min(100%, 210px);
+  }
+
+  .carousel-header p {
+    font-size: 0.92rem;
+  }
+
+  .testimonial-card {
+    flex-basis: calc(100vw - 78px);
+  }
+}
+
 @media (hover: none), (pointer: coarse) {
   /* Only hide the mouse cursor — WhatsApp stays visible on mobile */
   .cursor {
@@ -2712,7 +3058,7 @@ body.is-loading #scroll-progress {
 ───────────────────────────────────────────── */
 .marquee-section {
   overflow: hidden;
-  padding: 28px 0;
+  padding: 34px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
@@ -2768,19 +3114,29 @@ body.is-loading #scroll-progress {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 12px 14px;
+  margin: -12px -14px;
   color: rgba(226, 232, 240, 0.25);
   font-family: 'Syne', sans-serif;
   font-weight: 700;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  transition: color 0.35s ease;
+  transition:
+    color 0.28s ease,
+    transform 0.28s ease,
+    text-shadow 0.28s ease,
+    opacity 0.28s ease;
   white-space: nowrap;
   cursor: default;
+  border-radius: 6px;
 }
 
 .marquee-item:hover {
-  color: rgba(226, 232, 240, 0.65);
+  color: rgba(248, 250, 252, 0.92);
+  transform: scale(1.08);
+  text-shadow: 0 0 14px rgba(34, 211, 238, 0.22);
+  opacity: 1;
 }
 
 .marquee-item svg {
@@ -2788,6 +3144,13 @@ body.is-loading #scroll-progress {
   height: 11px;
   opacity: 0.45;
   flex-shrink: 0;
+  transition: transform 0.28s ease, opacity 0.28s ease, filter 0.28s ease;
+}
+
+.marquee-item:hover svg {
+  opacity: 0.92;
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.18));
 }
 
 .marquee-separator {
@@ -3683,6 +4046,14 @@ body.is-loading #scroll-progress {
 
   h2 {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
+  }
+
+  .proof-motion-header {
+    flex-direction: column;
+  }
+
+  .proof-motion-badge {
+    width: fit-content;
   }
 }
 
